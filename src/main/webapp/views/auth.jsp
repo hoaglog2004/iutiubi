@@ -109,6 +109,7 @@ prefix="c"%>
             type="password" class="form-control" id="registerPassword"
             name="password" <%-- Thêm 'name' --%> placeholder="Nhập mật khẩu
             (tối thiểu 6 ký tự)" required />
+            
           </div>
 
           <div class="form-group">

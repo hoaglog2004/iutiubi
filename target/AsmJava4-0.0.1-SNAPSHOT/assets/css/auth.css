@@ -1,0 +1,151 @@
+@charset "UTF-8";
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+	background: linear-gradient(135deg, #000000 0%, #764ba2 100%);
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 20px;
+}
+
+.auth-container {
+	background: white;
+	border-radius: 15px;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+	overflow: hidden;
+	max-width: 450px;
+	width: 100%;
+}
+
+/* [CODE QUAN TRỌNG NHẤT BẠN ĐANG BỊ THIẾU] */
+.form-section {
+    display: none; /* Ẩn tất cả các form theo mặc định */
+    padding: 50px 40px;
+}
+
+.form-section.active {
+    display: block; /* Chỉ hiện form nào có class "active" */
+}
+/* [HẾT PHẦN CODE BỊ THIẾU] */
+
+.form-section h2 {
+	font-size: 28px;
+	font-weight: 700;
+	margin-bottom: 10px;
+	color: #333;
+}
+
+.form-section p {
+	color: #666;
+	margin-bottom: 30px;
+	font-size: 14px;
+}
+
+.form-group {
+	margin-bottom: 20px;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: #333;
+	font-size: 14px;
+}
+
+.form-control {
+	width: 100%;
+	padding: 12px 15px;
+	border: 2px solid #e0e0e0;
+	border-radius: 8px;
+	font-size: 14px;
+	transition: all 0.3s;
+}
+
+.form-control:focus {
+	border-color: #667eea;
+	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+	outline: none;
+}
+
+.btn-primary {
+	width: 100%;
+	padding: 12px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s;
+	font-size: 15px;
+}
+
+.btn-primary:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.alert {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    border: 1px solid transparent;
+}
+.alert-danger {
+    color: #f5576c;
+    background-color: #fdebee;
+    border-color: #fbc2c4;
+}
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.form-check {
+	display: flex;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.form-check input {
+	width: 18px;
+	height: 18px;
+	margin-right: 8px;
+	cursor: pointer;
+}
+
+.form-check label {
+	margin: 0;
+	cursor: pointer;
+	font-size: 14px;
+	color: #666;
+}
+
+.toggle-section {
+	text-align: center;
+	margin-top: 20px;
+	font-size: 14px;
+	color: #666;
+}
+
+.toggle-section a {
+	color: #667eea;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.toggle-section a:hover {
+	text-decoration: underline;
+}

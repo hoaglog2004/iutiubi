@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 
+@SuppressWarnings("unused")
 public class VideoDAO extends AbstractDAO<Video> {
 
 	public VideoDAO() {
@@ -42,6 +43,7 @@ public class VideoDAO extends AbstractDAO<Video> {
 	 * @param keyword Từ khóa tìm kiếm
 	 * @return List<Video>
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Video> findByTitle(String keyword) {
 		// Dùng Native Query (SQL thuần) thay vì JPQL
 		// COLLATE Vietnamese_CI_AI: So sánh Tiếng Việt,
