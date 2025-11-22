@@ -13,8 +13,6 @@ public class JpaUtils {
      */
     public static EntityManager getEntityManager() {
         if (factory == null || !factory.isOpen()) {
-            // Tên "OnlineEntertainmentPU" phải GIỐNG HỆT
-            // tên <persistence-unit> trong file persistence.xml
             factory = Persistence.createEntityManagerFactory("AsmJava4");
         }
         return factory.createEntityManager();

@@ -42,8 +42,6 @@ public class FavoriteDAO extends AbstractDAO<Favorite> {
         }
     }
     public List<ReportFavorite> getReportFavorites() {
-        // [QUAN TRỌNG] Tên package 'com.yourproject.entity.ReportFavorite'
-        // phải khớp 100% với vị trí file bạn vừa tạo ở Bước 1.
         String jpql = "SELECT NEW asm.model.ReportFavorite("
                     + " f.video.title, "
                     + " COUNT(f), "

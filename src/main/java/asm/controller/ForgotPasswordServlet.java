@@ -15,7 +15,11 @@ import asm.utils.PasswordUtils;
 @WebServlet("/forgot-password")
 public class ForgotPasswordServlet extends HttpServlet {
     
-    private UserDAO userDAO = new UserDAO();
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private UserDAO userDAO = new UserDAO();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {

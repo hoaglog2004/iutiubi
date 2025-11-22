@@ -33,6 +33,13 @@
         <span class="sidebar-label">Yêu thích</span>
     </a>
     
+    <c:if test="${not empty sessionScope.currentUser}">
+        <a href="<c:url value='/history'/>" class="sidebar-item ${activePage == 'history' ? 'active' : ''}">
+            <i class="fas fa-history"></i>
+            <span class="sidebar-label">Lịch sử xem</span>
+        </a>
+    </c:if>
+    
     <div class="sidebar-divider"></div>
     
     <c:if test="${sessionScope.currentUser.admin == true}">

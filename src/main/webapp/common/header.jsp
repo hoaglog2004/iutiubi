@@ -77,10 +77,10 @@
 							href="<c:url value='/edit-profile'/>"> <i
 								class="fas fa-user-edit me-2"></i> Edit Profile
 						</a></li>
-						<li><a class="dropdown-item"
+						<%-- <li><a class="dropdown-item"
 							href="<c:url value='/change-password'/>"> <i
 								class="fas fa-key me-2"></i> Đổi mật khẩu
-						</a></li>
+						</a></li> --%>
 						<li><hr class="dropdown-divider"></li>
 						<li><a class="dropdown-item" href="<c:url value='/logout'/>">
 								<i class="fas fa-sign-out-alt me-2"></i> Logout

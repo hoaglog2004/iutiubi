@@ -5,50 +5,57 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
+import asm.dao.HistoryDAO;
 import asm.dao.VideoDAO;
+import asm.model.History;
+import asm.model.User;
 import asm.model.Video;
 
-/**
- * Servlet implementation class DetailServlet
- */
 @WebServlet("/detail")
 public class DetailServlet extends HttpServlet {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	@SuppressWarnings("unused")
-	private VideoDAO dao = new VideoDAO();
+    
+	// [ĐÃ SỬA] Khai báo DAO chuẩn
+	private VideoDAO videoDAO = new VideoDAO();
+	private HistoryDAO historyDAO = new HistoryDAO();
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
-            // Lấy videoId từ URL (ví dụ: ?videoId=abc123)
             String videoId = request.getParameter("videoId");
+            HttpSession session = request.getSession();
+            User currentUser = (User) session.getAttribute("currentUser");
+            
+            // 1. Tăng lượt xem và tìm video
             if (videoId != null && !videoId.isEmpty()) {
-                dao.incrementViewCount(videoId);
+                videoDAO.incrementViewCount(videoId);
             }
-            VideoDAO dao = new VideoDAO();
+            Video video = videoDAO.findById(videoId);
             
-            // 1. Lấy video chính
-            Video video = dao.findById(videoId);
+            // 2. [LOGIC LỊCH SỬ] Lấy thời điểm dừng xem của User
+            if (currentUser != null) {
+                History history = historyDAO.findByUserAndVideo(currentUser.getId(), videoId);
+                // Gửi đối tượng History ra JSP (Nếu không tìm thấy sẽ là null)
+                request.setAttribute("history", history); 
+            }
             
-            // 2. Lấy danh sách video xem thêm (ví dụ: tất cả video)
-            List<Video> relatedList = dao.findAll();
+            // 3. Lấy danh sách video xem thêm (Lấy 8 video đầu tiên)
+            List<Video> relatedList = videoDAO.findAll(1, 8);
             
-            // "Đẩy" cả 2 ra JSP
+            // 4. Đẩy dữ liệu ra JSP
             request.setAttribute("video", video);
-            request.setAttribute("videoList", relatedList); // Cho cột "Xem thêm"
+            request.setAttribute("videoList", relatedList); 
             
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Lỗi: " + e.getMessage());
         }
         
+        request.setAttribute("activePage", "detail");
         request.getRequestDispatcher("/views/detail.jsp").forward(request, response);
 	}
-
 }

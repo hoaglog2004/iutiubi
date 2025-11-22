@@ -17,12 +17,15 @@ C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\controlle
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\controller\UnlikeServlet.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\controller\UserManagementServlet.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\controller\VideoManagementServlet.java
+C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\controller\WatchEventServlet.java
+C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\controller\WatchHistoryServlet.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\dao\AbstractDAO.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\dao\CategoryDAO.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\dao\FavoriteDAO.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\dao\ShareDAO.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\dao\UserDAO.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\dao\VideoDAO.java
+C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\dao\WatchHistoryDAO.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\filter\AuthFilter.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\model\Category.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\model\Favorite.java
@@ -31,6 +34,7 @@ C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\model\Rep
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\model\Share.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\model\User.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\model\Video.java
+C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\model\WatchHistory.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\utils\EmailUtils.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\utils\JpaUtils.java
 C:\Users\chu cho ngu ngok\eclipse-workspace\AsmJava4\src\main\java\asm\utils\PasswordUtils.java
