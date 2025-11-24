@@ -5,6 +5,8 @@
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
 	rel="stylesheet" />
 <link href="<c:url value='/assets/css/style.css'/>" rel="stylesheet" />
+<link href="<c:url value='/assets/css/animations.css'/>" rel="stylesheet" />
+<link href="<c:url value='/assets/css/components.css'/>" rel="stylesheet" />
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -33,7 +35,7 @@
 		</div>
 
 		<div class="header-icons">
-			<button class="header-icon-btn" title="Thông báo">
+			<button class="header-icon-btn notification-bell" title="Thông báo">
 				<i class="fas fa-bell"></i>
 			</button>
 
