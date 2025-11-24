@@ -86,7 +86,7 @@
                         </div>
                         <div class="form-group">
                             <label>EMAIL?</label>
-                            <input type="email" class="form-control" name="email" value="${user.email}">
+                            <input type="email" class="form-control" name="email" value="${user.email}" readonly>
                         </div>
                         <div class="form-group">
                             <label>PASSWORD?</label>
