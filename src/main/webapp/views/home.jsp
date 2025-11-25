@@ -15,6 +15,8 @@
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link href="<c:url value='/assets/css/style.css'/>" rel="stylesheet" />
+<link href="<c:url value='/assets/css/animations.css'/>" rel="stylesheet" />
+<link href="<c:url value='/assets/css/components.css'/>" rel="stylesheet" />
 </head>
 <body>
 
@@ -35,11 +37,11 @@
 		</div>
 
 
-		<div class="video-grid" id="videoGrid" >
+		<div class="video-grid" id="videoGrid">
 
-			<c:forEach var="v" items="${videoList}">
+			<c:forEach var="v" items="${videoList}" varStatus="status">
 				<a href="<c:url value='/detail?videoId=${v.id}'/>"
-					class="video-card">
+					class="video-card stagger-item">
 					<div class="video-thumbnail">
 						<img src="${v.poster}" alt="${v.title}">
 						<div class="video-duration">15:30</div>
@@ -49,7 +51,7 @@
 						<div class="video-details">
 							<div class="video-title">${v.title}</div>
 							<div class="video-channel">Kênh Test</div>
-							<div class="video-stats">${v.views}lượt xem</div>
+							<div class="video-stats">${v.views} lượt xem</div>
 						</div>
 					</div>
 				</a>
