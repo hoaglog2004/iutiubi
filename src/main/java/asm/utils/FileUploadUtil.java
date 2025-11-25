@@ -137,8 +137,7 @@ public class FileUploadUtil {
         
         if (filePart.getSize() > MAX_FILE_SIZE) {
             long maxSizeMB = MAX_FILE_SIZE / (1024 * 1024);
-            logger.warn("File size {} exceeds maximum allowed size {}", 
-                    filePart.getSize(), MAX_FILE_SIZE);
+            logger.warn("File size exceeds maximum allowed size of {}MB", maxSizeMB);
             return "Kích thước file không được vượt quá " + maxSizeMB + "MB";
         }
         

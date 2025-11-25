@@ -108,12 +108,14 @@ public class LoginServlet extends HttpServlet {
                     Cookie cookie = new Cookie("username", user.getId());
                     cookie.setMaxAge(60 * 60 * 24 * 30); // 30 ngày
                     cookie.setHttpOnly(true); // Security: prevent XSS access
+                    cookie.setSecure(true); // Security: only send over HTTPS
                     response.addCookie(cookie);
                 } else {
                     // Nếu bỏ check, xóa cookie
                     Cookie cookie = new Cookie("username", "");
                     cookie.setMaxAge(0); // Xóa
                     cookie.setHttpOnly(true);
+                    cookie.setSecure(true);
                     response.addCookie(cookie);
                 }
                 

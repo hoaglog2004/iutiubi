@@ -249,14 +249,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.image-placeholder::before {
-    content: '\f03e';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 400;
-    font-size: 2rem;
     color: #ccc;
+    font-size: 2rem;
 }
 
 /* ===== Progress Bar ===== */

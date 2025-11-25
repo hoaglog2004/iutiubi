@@ -277,6 +277,10 @@ const LoadingUtils = {
         this.showOverlay(message);
         try {
             return await asyncFn();
+        } catch (error) {
+            // Show error toast to user
+            this.error(error.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+            throw error;
         } finally {
             this.hideOverlay();
         }

@@ -126,8 +126,9 @@ public class RateLimiterUtil {
         try {
             Long lockoutTime = lockedOutCache.getIfPresent(ipAddress);
             if (lockoutTime != null && lockoutTime > 0) {
+                long currentTime = System.currentTimeMillis();
                 long remainingTime = (lockoutTime + TimeUnit.MINUTES.toMillis(LOCKOUT_DURATION_MINUTES)) 
-                        - System.currentTimeMillis();
+                        - currentTime;
                 if (remainingTime > 0) {
                     logger.debug("IP {} is locked out for {} more seconds", 
                             ipAddress, TimeUnit.MILLISECONDS.toSeconds(remainingTime));
