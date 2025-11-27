@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -15,18 +14,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import asm.dao.UserDAO;
 import asm.model.User;
+import asm.utils.FileUploadUtil;
+import asm.utils.PasswordUtils;
 
 @WebServlet("/edit-profile")
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
-    maxFileSize = 1024 * 1024 * 10,       // 10MB
-    maxRequestSize = 1024 * 1024 * 50     // 50MB
+    maxFileSize = 1024 * 1024 * 5,        // 5MB (reduced from 10MB)
+    maxRequestSize = 1024 * 1024 * 10     // 10MB (reduced from 50MB)
 )
 public class EditProfileServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = LoggerFactory.getLogger(EditProfileServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -73,7 +78,7 @@ public class EditProfileServlet extends HttpServlet {
                 currentUser.setFullname(fullname.trim());
             }
             
-            // 2. Xử lý File Upload Avatar
+            // 2. Xử lý File Upload Avatar với FileUploadUtil
             String uploadDir = "uploads/avatars/";
             String realUploadPath = request.getServletContext().getRealPath(uploadDir);
             Path uploadPath = Paths.get(realUploadPath);
@@ -85,32 +90,20 @@ public class EditProfileServlet extends HttpServlet {
             Part filePart = request.getPart("avatarFile");
             
             if (filePart != null && filePart.getSize() > 0) {
-                String submittedFileName = filePart.getSubmittedFileName();
+                // Use FileUploadUtil for validation and saving
+                FileUploadUtil.UploadResult result = FileUploadUtil.saveImage(filePart, uploadPath);
                 
-                // Validate file type
-                String contentType = filePart.getContentType();
-                if (!contentType.startsWith("image/")) {
-                    throw new Exception("Chỉ chấp nhận file ảnh (JPG, PNG)");
+                if (!result.isSuccess()) {
+                    throw new Exception(result.getErrorMessage());
                 }
                 
-                // Lấy extension
-                String extension = submittedFileName.substring(submittedFileName.lastIndexOf("."));
-                
-                // Tạo tên file mới (username + timestamp để tránh cache)
-                String newFileName = currentUser.getId() + "_" + System.currentTimeMillis() + extension;
-                
-                Path filePath = uploadPath.resolve(newFileName);
-                
-                // Xóa avatar cũ nếu có (optional)
+                // Xóa avatar cũ nếu có
                 if (currentUser.getAvatar() != null && !currentUser.getAvatar().isEmpty()) {
-                    Path oldFile = uploadPath.resolve(currentUser.getAvatar());
-                    Files.deleteIfExists(oldFile);
+                    FileUploadUtil.deleteFile(uploadPath, currentUser.getAvatar());
                 }
                 
-                // Lưu file mới
-                Files.copy(filePart.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                
-                currentUser.setAvatar(newFileName);
+                currentUser.setAvatar(result.getFileName());
+                logger.info("Avatar updated for user: {}", currentUser.getId());
             }
 
             // 3. Cập nhật vào Database
@@ -124,7 +117,7 @@ public class EditProfileServlet extends HttpServlet {
             request.setAttribute("activeTab", "profile-info");
             
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error updating profile for user: {}", currentUser.getId(), e);
             request.setAttribute("error", "Lỗi: " + e.getMessage());
             request.setAttribute("activeTab", "profile-info");
         }
@@ -134,7 +127,7 @@ public class EditProfileServlet extends HttpServlet {
     }
 
     /**
-     * Xử lý đổi mật khẩu
+     * Xử lý đổi mật khẩu với BCrypt
      */
     private void handleChangePassword(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -157,7 +150,8 @@ public class EditProfileServlet extends HttpServlet {
                 throw new Exception("Vui lòng nhập mật khẩu hiện tại!");
             }
             
-            if (!currentUser.getPassword().equals(currentPassword)) {
+            // Use BCrypt to verify current password
+            if (!PasswordUtils.checkPassword(currentPassword, currentUser.getPassword())) {
                 throw new Exception("Mật khẩu hiện tại không đúng!");
             }
             
@@ -166,8 +160,10 @@ public class EditProfileServlet extends HttpServlet {
                 throw new Exception("Vui lòng nhập mật khẩu mới!");
             }
             
-            if (newPassword.length() < 6) {
-                throw new Exception("Mật khẩu mới phải có ít nhất 6 ký tự!");
+            // Validate password strength
+            String passwordError = PasswordUtils.validatePasswordStrength(newPassword);
+            if (passwordError != null) {
+                throw new Exception(passwordError);
             }
             
             // Validate: Xác nhận mật khẩu khớp
@@ -176,23 +172,24 @@ public class EditProfileServlet extends HttpServlet {
             }
             
             // Validate: Mật khẩu mới không được trùng cũ
-            if (newPassword.equals(currentPassword)) {
+            if (PasswordUtils.checkPassword(newPassword, currentUser.getPassword())) {
                 throw new Exception("Mật khẩu mới không được trùng với mật khẩu cũ!");
             }
 
-            // Cập nhật mật khẩu mới
+            // Cập nhật mật khẩu mới với BCrypt hash
             UserDAO dao = new UserDAO();
-            currentUser.setPassword(newPassword); // TODO: Nên mã hóa bằng BCrypt
+            currentUser.setPassword(PasswordUtils.hashPassword(newPassword));
             dao.update(currentUser);
             
             // Cập nhật session
             session.setAttribute("currentUser", currentUser);
             
+            logger.info("Password changed for user: {}", currentUser.getId());
             request.setAttribute("message", "Đổi mật khẩu thành công!");
             request.setAttribute("activeTab", "security");
             
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error changing password for user: {}", currentUser.getId(), e);
             request.setAttribute("error", e.getMessage());
             request.setAttribute("activeTab", "security");
         }

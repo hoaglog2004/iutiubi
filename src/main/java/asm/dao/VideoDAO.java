@@ -4,13 +4,18 @@ import java.util.List;
 import jakarta.persistence.Query;
 
 import asm.model.Video;
+import asm.utils.CacheManager;
 import asm.utils.JpaUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unused")
 public class VideoDAO extends AbstractDAO<Video> {
+
+	private static final Logger logger = LoggerFactory.getLogger(VideoDAO.class);
 
 	public VideoDAO() {
 		super(Video.class); // Tự động gọi super với Share.class
@@ -18,7 +23,7 @@ public class VideoDAO extends AbstractDAO<Video> {
 	// --- Các phương thức đặc thù cho Video ---
 
 	/**
-	 * Tìm các video được yêu thích bởi một User
+	 * Tìm các video được yêu thích bởi một User (with JOIN FETCH)
 	 * 
 	 * @param userId
 	 * @return List<Video>
@@ -27,8 +32,10 @@ public class VideoDAO extends AbstractDAO<Video> {
 	public List<Video> findFavoriteVideosByUserId(String userId) {
 		EntityManager em = JpaUtils.getEntityManager();
 		try {
-			// Dùng JPQL để JOIN qua bảng Favorite
-			String jpql = "SELECT f.video FROM Favorite f WHERE f.user.id = :uid";
+			// Dùng JPQL với JOIN FETCH để lấy category cùng lúc
+			String jpql = "SELECT DISTINCT f.video FROM Favorite f " +
+			              "LEFT JOIN FETCH f.video.category " +
+			              "WHERE f.user.id = :uid";
 			TypedQuery<Video> query = em.createQuery(jpql, Video.class);
 			query.setParameter("uid", userId);
 			return query.getResultList();
@@ -66,14 +73,73 @@ public class VideoDAO extends AbstractDAO<Video> {
 		}
 	}
 
+	/**
+	 * Find videos by category with JOIN FETCH for category
+	 */
 	public List<Video> findByCategory(String categoryId) {
-		String jpql = "SELECT v FROM Video v WHERE v.category.id = :cid";
+		String cacheKey = "videos_category_" + categoryId;
+		List<Video> cached = CacheManager.getVideoList(cacheKey);
+		if (cached != null) {
+			return cached;
+		}
 
 		EntityManager em = JpaUtils.getEntityManager();
 		try {
+			String jpql = "SELECT v FROM Video v LEFT JOIN FETCH v.category " +
+			              "WHERE v.category.id = :cid ORDER BY v.views DESC";
 			TypedQuery<Video> query = em.createQuery(jpql, Video.class);
 			query.setParameter("cid", categoryId);
-			return query.getResultList();
+			List<Video> result = query.getResultList();
+			CacheManager.putVideoList(cacheKey, result);
+			return result;
+		} finally {
+			em.close();
+		}
+	}
+
+	/**
+	 * Find all videos with category eager fetched
+	 */
+	public List<Video> findAllWithCategory() {
+		String cacheKey = "videos_all_with_category";
+		List<Video> cached = CacheManager.getVideoList(cacheKey);
+		if (cached != null) {
+			return cached;
+		}
+
+		EntityManager em = JpaUtils.getEntityManager();
+		try {
+			String jpql = "SELECT v FROM Video v LEFT JOIN FETCH v.category ORDER BY v.views DESC";
+			TypedQuery<Video> query = em.createQuery(jpql, Video.class);
+			List<Video> result = query.getResultList();
+			CacheManager.putVideoList(cacheKey, result);
+			return result;
+		} finally {
+			em.close();
+		}
+	}
+
+	/**
+	 * Find videos by category with JOIN FETCH (with pagination)
+	 */
+	public List<Video> findByCategoryWithFetch(String categoryId, int pageNumber, int pageSize) {
+		String cacheKey = "videos_category_" + categoryId + "_page_" + pageNumber + "_size_" + pageSize;
+		List<Video> cached = CacheManager.getVideoList(cacheKey);
+		if (cached != null) {
+			return cached;
+		}
+
+		EntityManager em = JpaUtils.getEntityManager();
+		try {
+			String jpql = "SELECT v FROM Video v LEFT JOIN FETCH v.category " +
+			              "WHERE v.category.id = :cid ORDER BY v.views DESC";
+			TypedQuery<Video> query = em.createQuery(jpql, Video.class);
+			query.setParameter("cid", categoryId);
+			query.setFirstResult((pageNumber - 1) * pageSize);
+			query.setMaxResults(pageSize);
+			List<Video> result = query.getResultList();
+			CacheManager.putVideoList(cacheKey, result);
+			return result;
 		} finally {
 			em.close();
 		}
@@ -106,40 +172,57 @@ public class VideoDAO extends AbstractDAO<Video> {
 	}
 
 	/**
-	 * [MỚI] Lấy TẤT CẢ video (có phân trang)
+	 * [MỚI] Lấy TẤT CẢ video (có phân trang) with JOIN FETCH
 	 * 
 	 * @param pageNumber Trang hiện tại (bắt đầu từ 1)
 	 * @param pageSize   Số video mỗi trang (ví dụ: 6)
 	 */
 	public List<Video> findAll(int pageNumber, int pageSize) {
+		String cacheKey = "videos_all_page_" + pageNumber + "_size_" + pageSize;
+		List<Video> cached = CacheManager.getVideoList(cacheKey);
+		if (cached != null) {
+			return cached;
+		}
+
 		EntityManager em = JpaUtils.getEntityManager();
 		try {
-			String jpql = "SELECT v FROM Video v ORDER BY v.views DESC";
+			String jpql = "SELECT v FROM Video v LEFT JOIN FETCH v.category ORDER BY v.views DESC";
 			TypedQuery<Video> query = em.createQuery(jpql, Video.class);
 
 			query.setFirstResult((pageNumber - 1) * pageSize); // Vị trí bắt đầu
 			query.setMaxResults(pageSize); // Số lượng lấy
 
-			return query.getResultList();
+			List<Video> result = query.getResultList();
+			CacheManager.putVideoList(cacheKey, result);
+			return result;
 		} finally {
 			em.close();
 		}
 	}
 
 	/**
-	 * [MỚI] Lấy video THEO THỂ LOẠI (có phân trang)
+	 * [MỚI] Lấy video THEO THỂ LOẠI (có phân trang) with JOIN FETCH
 	 */
 	public List<Video> findByCategory(String categoryId, int pageNumber, int pageSize) {
+		String cacheKey = "videos_category_" + categoryId + "_page_" + pageNumber + "_size_" + pageSize;
+		List<Video> cached = CacheManager.getVideoList(cacheKey);
+		if (cached != null) {
+			return cached;
+		}
+
 		EntityManager em = JpaUtils.getEntityManager();
 		try {
-			String jpql = "SELECT v FROM Video v WHERE v.category.id = :cid ORDER BY v.views DESC";
+			String jpql = "SELECT v FROM Video v LEFT JOIN FETCH v.category " +
+			              "WHERE v.category.id = :cid ORDER BY v.views DESC";
 			TypedQuery<Video> query = em.createQuery(jpql, Video.class);
 
 			query.setParameter("cid", categoryId);
 			query.setFirstResult((pageNumber - 1) * pageSize);
 			query.setMaxResults(pageSize);
 
-			return query.getResultList();
+			List<Video> result = query.getResultList();
+			CacheManager.putVideoList(cacheKey, result);
+			return result;
 		} finally {
 			em.close();
 		}
@@ -170,6 +253,10 @@ public class VideoDAO extends AbstractDAO<Video> {
 
 				// 5. Lưu thay đổi
 				em.getTransaction().commit();
+
+				// Invalidate cache for this video
+				CacheManager.invalidateVideo(videoId);
+				CacheManager.invalidateVideoLists();
 			} else {
 				// Nếu video không tìm thấy, hủy giao dịch
 				em.getTransaction().rollback();
@@ -179,7 +266,7 @@ public class VideoDAO extends AbstractDAO<Video> {
 			if (em.getTransaction().isActive()) {
 				em.getTransaction().rollback();
 			}
-			e.printStackTrace();
+			logger.error("Error incrementing view count for video: {}", videoId, e);
 		} finally {
 			em.close();
 		}

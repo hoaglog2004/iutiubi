@@ -7,18 +7,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import asm.dao.UserDAO;
 import asm.model.User;
+import asm.utils.PasswordUtils;
+import asm.utils.RateLimiterUtil;
 
 /**
  * Servlet implementation class RegisterServlet
  */
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LoggerFactory.getLogger(RegisterServlet.class);
 
 	// Hiển thị trang auth.jsp (với tab register được active)
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -32,6 +36,17 @@ public class RegisterServlet extends HttpServlet {
 	// Xử lý form đăng ký
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+
+		String clientIp = RateLimiterUtil.getClientIp(request);
+		
+		// Check rate limit
+		if (!RateLimiterUtil.isAllowed(clientIp)) {
+			logger.warn("Rate limit exceeded for registration from IP: {}", clientIp);
+			request.setAttribute("error", "Bạn đang gửi yêu cầu quá nhanh. Vui lòng chờ một chút.");
+			request.setAttribute("view", "register");
+			request.getRequestDispatcher("/views/auth.jsp").forward(request, response);
+			return;
+		}
 
 		UserDAO dao = new UserDAO();
 		User user = new User();
@@ -53,6 +68,15 @@ public class RegisterServlet extends HttpServlet {
 				return;
 			}
 
+			// Validate password strength
+			String passwordError = PasswordUtils.validatePasswordStrength(password);
+			if (passwordError != null) {
+				request.setAttribute("error", passwordError);
+				request.setAttribute("view", "register");
+				request.getRequestDispatcher("/views/auth.jsp").forward(request, response);
+				return;
+			}
+
 			if (dao.findById(username) != null) {
 				// Username đã tồn tại
 				request.setAttribute("error", "Tên đăng nhập (ID) đã tồn tại!");
@@ -61,14 +85,16 @@ public class RegisterServlet extends HttpServlet {
 				return;
 			}
 
-			// Nếu mọi thứ OK, tạo user
+			// Nếu mọi thứ OK, tạo user với hashed password
 			user.setId(username);
-			user.setPassword(password); // Nên mã hóa mật khẩu ở đây
+			user.setPassword(PasswordUtils.hashPassword(password)); // Hash password với BCrypt
 			user.setFullname(fullname);
 			user.setEmail(email);
 			user.setAdmin(false); // Mặc định là user
 
 			dao.create(user);
+			
+			logger.info("New user registered: {} from IP: {}", username, clientIp);
 
 			// Đăng ký thành công -> Chuyển sang tab Login
 			request.setAttribute("message", "Đăng ký thành công! Vui lòng đăng nhập.");
@@ -76,7 +102,7 @@ public class RegisterServlet extends HttpServlet {
 			request.getRequestDispatcher("/views/auth.jsp").forward(request, response);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error during registration", e);
 			request.setAttribute("error", "Lỗi đăng ký: " + e.getMessage());
 			request.setAttribute("view", "register");
 			request.getRequestDispatcher("/views/auth.jsp").forward(request, response);
