@@ -360,8 +360,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Cập nhật bảng
             const newTableContainer = doc.querySelector('.custom-table-container');
-            if (newTableContainer) {
-                document.querySelector('.custom-table-container').innerHTML = newTableContainer.innerHTML;
+            const currentTableContainer = document.querySelector('.custom-table-container');
+            if (newTableContainer && currentTableContainer) {
+                currentTableContainer.innerHTML = newTableContainer.innerHTML;
                 
                 // Re-attach event listeners cho các nút xóa mới
                 attachDeleteHandlers();
@@ -422,8 +423,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Cập nhật bảng
                     const newTableContainer = doc.querySelector('.custom-table-container');
-                    if (newTableContainer) {
-                        document.querySelector('.custom-table-container').innerHTML = newTableContainer.innerHTML;
+                    const currentTableContainer = document.querySelector('.custom-table-container');
+                    if (newTableContainer && currentTableContainer) {
+                        currentTableContainer.innerHTML = newTableContainer.innerHTML;
                         attachDeleteHandlers();
                     }
                     
