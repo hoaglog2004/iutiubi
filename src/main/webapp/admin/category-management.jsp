@@ -9,118 +9,321 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quản Lý Thể Loại</title>
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap 5 & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Custom CSS Path -->
     <link href="<c:url value='/assets/css/style.css'/>" rel="stylesheet" />
     <link href="<c:url value='/assets/css/animations.css'/>" rel="stylesheet" />
     <link href="<c:url value='/assets/css/components.css'/>" rel="stylesheet" /> 
 
     <style>
-        .main-content { color: #ffffff; }
-        .admin-header { font-size: 24px; font-weight: 600; padding-bottom: 20px; border-bottom: 1px solid #272727; margin-bottom: 24px; }
-        .admin-layout { display: flex; gap: 24px; }
-        .admin-form-col { flex: 1; max-width: 450px; }
-        .admin-table-col { flex: 2; }
-        .admin-form { background-color: #1a1a1a; padding: 24px; border-radius: 12px; }
-        .admin-form .form-group { margin-bottom: 16px; }
-        .admin-form label { display: block; color: #aaaaaa; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
-        .admin-form .form-control {
-            background-color: #272727; border: 1px solid #404040; color: #ffffff;
-            border-radius: 8px; width: 100%; padding: 10px 14px; font-size: 14px;
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-color: #ff4757;
+            --accent-hover: #ff6b81;
+            --border-color: #333;
         }
-        .admin-form .form-control:focus { outline: none; border-color: #ff0000; box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.2); }
-        .admin-form .form-check-label { color: #ffffff; margin-left: 8px; }
-        .admin-form .btn { border: none; padding: 10px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; margin-right: 8px; cursor: pointer; transition: all 0.2s; }
-        .btn-admin-primary { background-color: #ff0000; color: #ffffff; }
-        .btn-admin-primary:hover { background-color: #cc0000; }
-        .btn-admin-secondary { background-color: #272727; color: #ffffff; }
-        .btn-admin-secondary:hover { background-color: #3a3a3a; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .admin-table th, .admin-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #272727; }
-        .admin-table th { color: #aaaaaa; font-weight: 600; }
-        .admin-table td { color: #ffffff; }
-        .admin-table a { color: #ff0000; text-decoration: none; font-weight: 600; }
-        .admin-table a:hover { text-decoration: underline; }
-        @media (max-width: 992px) {
-            .admin-layout { flex-direction: column; }
-            .admin-form-col { max-width: 100%; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        /* Header Styling */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        /* Card Styling */
+        .glass-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            height: 100%;
+            transition: transform 0.2s;
+        }
+
+        /* Form Styling */
+        .form-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .custom-input {
+            background-color: #2c2c2c;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-input:focus {
+            background-color: #333;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.15);
+            color: #fff;
+        }
+        
+        .custom-input:disabled,
+        .custom-input[readonly] {
+            background-color: #252525;
+            color: #666;
+        }
+
+        /* Button Styling - UX Improved */
+        .action-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 2rem;
+        }
+
+        .btn-custom {
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(45deg, var(--accent-color), #ff6b81);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 71, 87, 0.4);
+            color: white;
+        }
+
+        .btn-outline-custom {
+            background: transparent;
+            border: 1px solid #555;
+            color: var(--text-secondary);
+        }
+
+        .btn-outline-custom:hover {
+            background: #333;
+            color: #fff;
+            border-color: #fff;
+        }
+
+        .btn-delete-custom {
+            background: #2c2c2c;
+            color: #ff4757;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+        }
+
+        .btn-delete-custom:hover {
+            background: rgba(255, 71, 87, 0.1);
+            border-color: var(--accent-color);
+        }
+        
+        .btn-reset-full {
+            grid-column: span 2;
+            margin-top: 5px;
+        }
+
+        /* Table Styling */
+        .custom-table-container {
+            overflow-x: auto;
+        }
+        
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .custom-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-table td {
+            background-color: #252525;
+            padding: 1rem;
+            vertical-align: middle;
+            color: #fff;
+            border-top: 1px solid transparent;
+            border-bottom: 1px solid transparent;
+        }
+
+        .custom-table td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+        .custom-table td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+        .custom-table tr:hover td {
+            background-color: #2a2a2a;
+            transform: scale(1.005);
+            transition: transform 0.2s;
         }
     </style>
 </head>
 <body>
     
     <jsp:include page="/common/header.jsp"/>
-    <jsp:include page="/common/sidebar.jsp"/>
+    
+    <div class="d-flex">
+        <jsp:include page="/common/sidebar.jsp"/>
 
-    <div class="main-content" id="mainContent">
-        <h2 class="admin-header">QUẢN LÝ THỂ LOẠI</h2>
-
-        <c:if test="${not empty message}">
-            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; margin-bottom: 16px;">${message}</div>
-        </c:if>
-        <c:if test="${not empty error}">
-            <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; margin-bottom: 16px;">${error}</div>
-        </c:if>
-
-        <div class="admin-layout">
+        <div class="flex-grow-1 main-content" id="mainContent">
             
-            <div class="admin-form-col">
-                <div class="admin-form">
-                    <c:set var="formAction" value="${empty category.id ? 'create' : 'update'}" />
-                    
-                    <form action="<c:url value='/admin/categories'/>" method="post">
-                        <input type="hidden" name="action" value="${formAction}" />
-                        
-                        <div class="form-group">
-                            <label>CATEGORY ID?</label>
-                            <input type="text" class="form-control" name="id" value="${category.id}"
-                                ${empty category.id ? '' : 'readonly'}
-                                placeholder="Ví dụ: music, game, sport...">
-                        </div>
-                        <div class="form-group">
-                            <label>CATEGORY NAME?</label>
-                            <input type="text" class="form-control" name="name" value="${category.name}"
-                                placeholder="Ví dụ: Âm nhạc, Game, Thể thao...">
-                        </div>
-                        
-                        <div>
-                            <button class="btn btn-admin-primary" ${empty category.id ? '' : 'disabled'}>Create</button>
-                            <button class="btn btn-admin-primary" ${empty category.id ? 'disabled' : ''}>Update</button>
-                            <button formaction="<c:url value='/admin/categories?action=delete&id=${category.id}'/>"
-                                    class="btn btn-admin-primary" style="background-color: #555;" ${empty category.id ? 'disabled' : ''}>Delete</button>
-                            <a href="<c:url value='/admin/categories'/>" class="btn btn-admin-secondary">Reset</a>
-                        </div>
-                    </form>
-                </div>
+            <!-- Header Section -->
+            <div class="page-header">
+                <h2 class="page-title"><i class="fas fa-tags me-2"></i>Quản Lý Thể Loại</h2>
             </div>
-            
-            <div class="admin-table-col">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Category ID</th>
-                            <th>Category Name</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach var="cat" items="${categoryList}">
-                            <tr>
-                                <td>${cat.id}</td>
-                                <td>${cat.name}</td>
-                                <td>
-                                    <a href="<c:url value='/admin/categories?action=edit&id=${cat.id}'/>">Edit</a>
-                                </td>
-                            </tr>
-                        </c:forEach>
-                    </tbody>
-                </table>
+
+            <!-- Alerts -->
+            <c:if test="${not empty message}">
+                <div class="alert alert-success d-flex align-items-center" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> ${message}
+                </div>
+            </c:if>
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> ${error}
+                </div>
+            </c:if>
+
+            <div class="row g-4">
+                <!-- FORM COLUMN (Left) -->
+                <div class="col-lg-4 col-md-12">
+                    <div class="glass-card sticky-top" style="top: 20px; z-index: 1;">
+                        <c:set var="formAction" value="${empty category.id ? 'create' : 'update'}" />
+                        
+                        <form action="<c:url value='/admin/categories'/>" method="post">
+                            <input type="hidden" name="action" value="${formAction}" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Category ID</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-hashtag"></i></span>
+                                    <input type="text" class="form-control custom-input" name="id" value="${category.id}"
+                                        ${empty category.id ? '' : 'readonly'}
+                                        placeholder="Ví dụ: music, game, sport...">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tên Thể Loại</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-folder"></i></span>
+                                    <input type="text" class="form-control custom-input" name="name" value="${category.name}"
+                                        placeholder="Ví dụ: Âm nhạc, Game, Thể thao...">
+                                </div>
+                            </div>
+                            
+                            <!-- ACTION BUTTONS -->
+                            <div class="action-bar">
+                                <c:choose>
+                                    <c:when test="${empty category.id}">
+                                        <!-- Trạng thái: Tạo mới (Chỉ hiện nút Create và Reset) -->
+                                        <button type="submit" class="btn btn-custom btn-primary-custom" style="grid-column: span 2;">
+                                            <i class="fas fa-plus-circle"></i> Thêm Mới
+                                        </button>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <!-- Trạng thái: Chỉnh sửa (Hiện Update và Delete) -->
+                                        <button type="submit" class="btn btn-custom btn-primary-custom">
+                                            <i class="fas fa-save"></i> Lưu
+                                        </button>
+                                        
+                                        <button type="submit" formaction="<c:url value='/admin/categories?action=delete&id=${category.id}'/>" 
+                                                class="btn btn-custom btn-delete-custom" onclick="return confirm('Bạn có chắc muốn xóa thể loại này?');">
+                                            <i class="fas fa-trash-alt"></i> Xóa
+                                        </button>
+                                    </c:otherwise>
+                                </c:choose>
+                                
+                                <!-- Nút Reset luôn hiện -->
+                                <a href="<c:url value='/admin/categories'/>" class="btn btn-custom btn-outline-custom btn-reset-full">
+                                    <i class="fas fa-sync-alt"></i> Làm mới
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TABLE COLUMN (Right) -->
+                <div class="col-lg-8 col-md-12">
+                    <div class="custom-table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th width="30%">Category ID</th>
+                                    <th>Tên Thể Loại</th>
+                                    <th width="15%">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="cat" items="${categoryList}">
+                                    <tr>
+                                        <td class="text-secondary font-monospace">${cat.id}</td>
+                                        <td>${cat.name}</td>
+                                        <td>
+                                            <a href="<c:url value='/admin/categories?action=edit&id=${cat.id}'/>" 
+                                               class="btn btn-sm btn-outline-light border-0">
+                                                <i class="fas fa-pen text-info"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                                
+                                <!-- Empty State handling -->
+                                <c:if test="${empty categoryList}">
+                                    <tr>
+                                        <td colspan="3" class="text-center py-5 text-muted">
+                                            <i class="fas fa-folder-open fa-3x mb-3"></i><br>
+                                            Chưa có thể loại nào trong hệ thống.
+                                        </td>
+                                    </tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<c:url value='/assets/js/app.js'/>"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
