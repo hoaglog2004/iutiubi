@@ -1,6 +1,7 @@
 package asm.controller;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,11 @@ import asm.model.Video;
 /**
  * Servlet implementation class VideoManagementServlet
  */
+@MultipartConfig(
+	    fileSizeThreshold = 1024 * 1024 * 2,   // 2MB
+	    maxFileSize = 1024 * 1024 * 50,        // 50MB
+	    maxRequestSize = 1024 * 1024 * 100     // 100MB
+	)
 @WebServlet("/admin/videos")
 public class VideoManagementServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;

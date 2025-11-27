@@ -78,8 +78,9 @@ public class EditProfileServlet extends HttpServlet {
                 currentUser.setFullname(fullname.trim());
             }
             
-            // 2. Xử lý File Upload Avatar với FileUploadUtil
-            String uploadDir = "uploads/avatars/";
+            // 2. Xử lý File Upload Avatar: lưu vào webapp assets/img
+            //     Lưu ý: folder này nằm trong webapp. Nếu redeploy WAR, đôi khi file có thể bị ghi đè/không tồn tại.
+            String uploadDir = "/assets/img/";
             String realUploadPath = request.getServletContext().getRealPath(uploadDir);
             Path uploadPath = Paths.get(realUploadPath);
             
@@ -97,7 +98,7 @@ public class EditProfileServlet extends HttpServlet {
                     throw new Exception(result.getErrorMessage());
                 }
                 
-                // Xóa avatar cũ nếu có
+                // Xóa avatar cũ nếu có (tên file lưu trong DB)
                 if (currentUser.getAvatar() != null && !currentUser.getAvatar().isEmpty()) {
                     FileUploadUtil.deleteFile(uploadPath, currentUser.getAvatar());
                 }
