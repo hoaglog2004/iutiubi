@@ -207,6 +207,55 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* --- Video Manager layout tweaks (new) --- */
+        .video-manager-container {
+          display: flex;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+
+        /* Panel common */
+        .vm-panel {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
+          padding: 0.75rem;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+          height: 100%;
+        }
+
+        /* inner panel with limited height and internal scroll */
+        .vm-panel-inner {
+          max-height: calc(100vh - 220px); /* adjust if header/footer heights differ */
+          overflow-y: auto;
+          padding-right: 0.5rem;
+        }
+
+        /* Column sizing */
+        .vm-left { flex: 0 0 36%; max-width: 36%; }
+        .vm-right { flex: 1 1 64%; }
+
+        .vm-table-wrapper {
+          max-height: calc(100vh - 300px);
+          overflow-y: auto;
+        }
+
+        /* Compact table */
+        .table.vm-table thead th,
+        .table.vm-table tbody td {
+          padding: 0.45rem 0.6rem;
+          vertical-align: middle;
+          font-size: 0.9rem;
+        }
+
+        .vm-form .mb-3 { margin-bottom: 0.6rem; }
+
+        @media (max-width: 991.98px) {
+          .video-manager-container { flex-direction: column; }
+          .vm-left, .vm-right { max-width: 100%; flex: 1 1 100%; }
+          .vm-panel-inner { max-height: none; overflow: visible; }
+        }
     </style>
 </head>
 <body>
@@ -235,149 +284,174 @@
                 </div>
             </c:if>
 
-            <div class="row g-4">
+            <!-- New layout: left form + right list as two panels with independent scrolling -->
+            <div class="video-manager-container">
+
                 <!-- FORM COLUMN (Left) -->
-                <div class="col-lg-4 col-md-12">
-                    <div class="glass-card sticky-top" style="top: 20px; z-index: 1;">
-                        <c:set var="formAction" value="${empty video.id ? 'create' : 'update'}" />
-                        
-                        <form action="<c:url value='/admin/videos?action=${formAction}'/>" method="post">
+                <div class="vm-left">
+                    <div class="vm-panel">
+                        <div class="vm-panel-inner vm-form">
+                            <c:set var="formAction" value="${empty video.id ? 'create' : 'update'}" />
                             
-                            <div class="mb-3">
-                                <label class="form-label">Youtube ID</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fab fa-youtube"></i></span>
-                                    <input type="text" class="form-control custom-input" name="id" 
-                                           value="${video.id}" placeholder="Ví dụ: AJDEu1-nSTI"
-                                           ${empty video.id ? '' : 'readonly'}>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Tiêu đề Video</label>
-                                <input type="text" class="form-control custom-input" name="title" 
-                                       value="${video.title}" placeholder="Nhập tiêu đề video...">
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-6 mb-3">
-                                    <label class="form-label">Lượt xem</label>
-                                    <input type="number" class="form-control custom-input" name="views" 
-                                           value="${video.views}" min="0">
-                                </div>
-                                <div class="col-6 mb-3">
-                                    <label class="form-label">Danh mục</label>
-                                    <select name="categoryId" class="form-select custom-input">
-                                        <option value="">-- Chọn --</option>
-                                        <c:forEach var="cat" items="${categoryList}">
-                                            <option value="${cat.id}" ${video.category.id == cat.id ? 'selected' : ''}>
-                                                ${cat.name}
-                                            </option>
-                                        </c:forEach>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Mô tả</label>
-                                <textarea class="form-control custom-input" name="description" 
-                                          rows="3" placeholder="Mô tả nội dung video...">${video.description}</textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label d-block">Trạng thái</label>
-                                <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="active" id="active" value="true" ${video.active ? 'checked' : ''} autocomplete="off">
-                                    <label class="btn btn-outline-success" for="active">Active</label>
-
-                                    <input type="radio" class="btn-check" name="active" id="inactive" value="false" ${video.active ? '' : 'checked'} autocomplete="off">
-                                    <label class="btn btn-outline-danger" for="inactive">Inactive</label>
-                                </div>
-                            </div>
-                            
-                            <!-- ACTION BUTTONS -->
-                            <div class="action-bar">
-                                <c:choose>
-                                    <c:when test="${empty video.id}">
-                                        <!-- Trạng thái: Tạo mới (Chỉ hiện nút Create và Reset) -->
-                                        <button type="submit" class="btn btn-custom btn-primary-custom" style="grid-column: span 2;">
-                                            <i class="fas fa-plus-circle"></i> Thêm Mới
-                                        </button>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <!-- Trạng thái: Chỉnh sửa (Hiện Update và Delete) -->
-                                        <button type="submit" class="btn btn-custom btn-primary-custom">
-                                            <i class="fas fa-save"></i> Lưu
-                                        </button>
-                                        
-                                        <button type="submit" formaction="<c:url value='/admin/videos?action=delete&id=${video.id}'/>" 
-                                                class="btn btn-custom btn-delete-custom" onclick="return confirm('Bạn có chắc muốn xóa video này?');">
-                                            <i class="fas fa-trash-alt"></i> Xóa
-                                        </button>
-                                    </c:otherwise>
-                                </c:choose>
+                            <form action="<c:url value='/admin/videos?action=${formAction}'/>" method="post" enctype="multipart/form-data">
                                 
-                                <!-- Nút Reset luôn hiện -->
-                                <a href="<c:url value='/admin/videos'/>" class="btn btn-custom btn-outline-custom btn-reset-full">
-                                    <i class="fas fa-sync-alt"></i> Làm mới
-                                </a>
-                            </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Youtube ID</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fab fa-youtube"></i></span>
+                                        <input type="text" class="form-control custom-input" name="id" 
+                                               value="${video.id}" placeholder="Ví dụ: AJDEu1-nSTI"
+                                               ${empty video.id ? '' : 'readonly'}>
+                                    </div>
+                                </div>
 
-                        </form>
+                                <div class="mb-3">
+                                    <label class="form-label">Tiêu đề Video</label>
+                                    <input type="text" class="form-control custom-input" name="title" 
+                                           value="${video.title}" placeholder="Nhập tiêu đề video...">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label">Lượt xem</label>
+                                        <input type="number" class="form-control custom-input" name="views" 
+                                               value="${video.views}" min="0">
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label">Danh mục</label>
+                                        <select name="categoryId" class="form-select custom-input">
+                                            <option value="">-- Chọn --</option>
+                                            <c:forEach var="cat" items="${categoryList}">
+                                                <option value="${cat.id}" ${video.category.id == cat.id ? 'selected' : ''}>
+                                                    ${cat.name}
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Mô tả</label>
+                                    <textarea class="form-control custom-input" name="description" 
+                                              rows="3" placeholder="Mô tả nội dung video...">${video.description}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Trạng thái</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="active" id="active" value="true" ${video.active ? 'checked' : ''} autocomplete="off">
+                                        <label class="btn btn-outline-success" for="active">Active</label>
+
+                                        <input type="radio" class="btn-check" name="active" id="inactive" value="false" ${video.active ? '' : 'checked'} autocomplete="off">
+                                        <label class="btn btn-outline-danger" for="inactive">Inactive</label>
+                                    </div>
+                                </div>
+                                
+                                <!-- ACTION BUTTONS -->
+                                <div class="action-bar">
+                                    <c:choose>
+                                        <c:when test="${empty video.id}">
+                                            <!-- Trạng thái: Tạo mới (Chỉ hiện nút Create và Reset) -->
+                                            <button type="submit" class="btn btn-custom btn-primary-custom" style="grid-column: span 2;">
+                                                <i class="fas fa-plus-circle"></i> Thêm Mới
+                                            </button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <!-- Trạng thái: Chỉnh sửa (Hiện Update và Delete) -->
+                                            <button type="submit" class="btn btn-custom btn-primary-custom">
+                                                <i class="fas fa-save"></i> Lưu
+                                            </button>
+                                            
+                                            <button type="submit" formaction="<c:url value='/admin/videos?action=delete&id=${video.id}'/>" 
+                                                    class="btn btn-custom btn-delete-custom" onclick="return confirm('Bạn có chắc muốn xóa video này?');">
+                                                <i class="fas fa-trash-alt"></i> Xóa
+                                            </button>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    
+                                    <!-- Nút Reset luôn hiện -->
+                                    <a href="<c:url value='/admin/videos'/>" class="btn btn-custom btn-outline-custom btn-reset-full">
+                                        <i class="fas fa-sync-alt"></i> Làm mới
+                                    </a>
+                                </div>
+
+                            </form>
+                        </div>
                     </div>
                 </div>
 
                 <!-- TABLE COLUMN (Right) -->
-                <div class="col-lg-8 col-md-12">
-                    <div class="custom-table-container">
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th width="15%">Youtube ID</th>
-                                    <th>Tiêu đề</th>
-                                    <th width="10%">Views</th>
-                                    <th width="12%">Trạng thái</th>
-                                    <th width="10%">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="v" items="${videoList}">
-                                    <tr>
-                                        <td class="text-secondary font-monospace">${v.id}</td>
-                                        <td class="video-title-cell" title="${v.title}">${v.title}</td>
-                                        <td>${v.views}</td>
-                                        <td>
-                                            <span class="status-badge ${v.active ? 'status-active' : 'status-inactive'}">
-                                                ${v.active ? 'Hoạt động' : 'Đã ẩn'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="<c:url value='/admin/videos?action=edit&id=${v.id}'/>" 
-                                               class="btn btn-sm btn-outline-light border-0">
-                                                <i class="fas fa-pen text-info"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                                
-                                <!-- Empty State handling (Optional) -->
-                                <c:if test="${empty videoList}">
-                                    <tr>
-                                        <td colspan="5" class="text-center py-5 text-muted">
-                                            <i class="fas fa-film fa-3x mb-3"></i><br>
-                                            Chưa có video nào trong hệ thống.
-                                        </td>
-                                    </tr>
-                                </c:if>
-                            </tbody>
-                        </table>
+                <div class="vm-right">
+                    <div class="vm-panel">
+                        <div class="vm-panel-inner">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Danh sách Video</h5>
+                                <div style="width:260px;">
+                                    <input id="vmSearch" type="text" placeholder="Tìm kiếm..." class="form-control form-control-sm custom-input">
+                                </div>
+                            </div>
+
+                            <div class="vm-table-wrapper">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover vm-table custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="15%">Youtube ID</th>
+                                                <th>Tiêu đề</th>
+                                                <th width="10%">Views</th>
+                                                <th width="12%">Trạng thái</th>
+                                                <th width="10%">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="vmTableBody">
+                                            <c:forEach var="v" items="${videoList}">
+                                                <tr>
+                                                    <td class="text-secondary font-monospace">${v.id}</td>
+                                                    <td class="video-title-cell" title="${v.title}">${v.title}</td>
+                                                    <td>${v.views}</td>
+                                                    <td>
+                                                        <span class="status-badge ${v.active ? 'status-active' : 'status-inactive'}">
+                                                            ${v.active ? 'Hoạt động' : 'Đã ẩn'}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="<c:url value='/admin/videos?action=edit&id=${v.id}'/>" 
+                                                           class="btn btn-sm btn-outline-light border-0">
+                                                            <i class="fas fa-pen text-info"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+
+                                            <c:if test="${empty videoList}">
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-5 text-muted">
+                                                        <i class="fas fa-film fa-3x mb-3"></i><br>
+                                                        Chưa có video nào trong hệ thống.
+                                                    </td>
+                                                </tr>
+                                            </c:if>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Pagination placeholder (server-side render recommended) -->
+                            <nav aria-label="vmPagination" class="mt-3">
+                                ${paginationHtml}
+                            </nav>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+            </div> <!-- /video-manager-container -->
+
         </div>
     </div>
 
+    <!-- scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<c:url value='/assets/js/app.js'/>"></script>
+    <script src="<c:url value='/assets/js/video-management.js'/>"></script>
 </body>
 </html>
