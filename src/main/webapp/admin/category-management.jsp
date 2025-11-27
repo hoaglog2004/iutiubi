@@ -300,8 +300,13 @@
                                         <td>
                                             <a href="<c:url value='/admin/categories?action=edit&id=${cat.id}'/>" 
                                                class="btn btn-sm btn-outline-light border-0">
-                                                <i class="fas fa-pen text-info"></i>
+                                                <i class="fas fa-edit"></i>
                                             </a>
+                                            <button class="btn btn-sm btn-outline-danger border-0 btn-delete-category" 
+                                                    data-id="${cat.id}"
+                                                    data-name="${cat.name}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -325,5 +330,199 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<c:url value='/assets/js/app.js'/>"></script>
+    
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ===== XỬ LÝ FORM SUBMIT BẰNG AJAX =====
+    const categoryForm = document.querySelector('form');
+    
+    categoryForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Ngăn submit bình thường
+        
+        const formData = new FormData(this);
+        const action = formData.get('action');
+        
+        // Hiển thị loading
+        showLoading(true);
+        
+        fetch('<c:url value="/admin/categories"/>', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+            showLoading(false);
+            
+            // Parse HTML response
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Cập nhật bảng
+            const newTableContainer = doc.querySelector('.custom-table-container');
+            if (newTableContainer) {
+                document.querySelector('.custom-table-container').innerHTML = newTableContainer.innerHTML;
+                
+                // Re-attach event listeners cho các nút xóa mới
+                attachDeleteHandlers();
+            }
+            
+            // Kiểm tra và hiển thị thông báo
+            const successMsg = doc.querySelector('.alert-success');
+            const errorMsg = doc.querySelector('.alert-danger');
+            
+            if (successMsg) {
+                showAlert('success', successMsg.textContent.trim());
+                
+                // Reset form nếu là create thành công
+                if (action === 'create') {
+                    categoryForm.reset();
+                }
+            }
+            
+            if (errorMsg) {
+                showAlert('danger', errorMsg.textContent.trim());
+            }
+        })
+        .catch(err => {
+            showLoading(false);
+            showAlert('danger', 'Lỗi kết nối: ' + err.message);
+        });
+    });
+    
+    // ===== XỬ LÝ NÚT XÓA BẰNG AJAX =====
+    function attachDeleteHandlers() {
+        document.querySelectorAll('.btn-delete-category').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const id = this.dataset.id;
+                const name = this.dataset.name;
+                
+                if (!confirm('Bạn có chắc muốn xóa thể loại "' + name + '"?')) {
+                    return;
+                }
+                
+                showLoading(true);
+                
+                const formData = new FormData();
+                formData.append('action', 'delete');
+                formData.append('id', id);
+                
+                fetch('<c:url value="/admin/categories"/>', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    showLoading(false);
+                    
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Cập nhật bảng
+                    const newTableContainer = doc.querySelector('.custom-table-container');
+                    if (newTableContainer) {
+                        document.querySelector('.custom-table-container').innerHTML = newTableContainer.innerHTML;
+                        attachDeleteHandlers();
+                    }
+                    
+                    // Hiển thị thông báo
+                    const successMsg = doc.querySelector('.alert-success');
+                    const errorMsg = doc.querySelector('.alert-danger');
+                    
+                    if (successMsg) {
+                        showAlert('success', successMsg.textContent.trim());
+                    }
+                    if (errorMsg) {
+                        showAlert('danger', errorMsg.textContent.trim());
+                    }
+                })
+                .catch(err => {
+                    showLoading(false);
+                    showAlert('danger', 'Lỗi kết nối: ' + err.message);
+                });
+            });
+        });
+    }
+    
+    // Khởi tạo event handlers cho các nút xóa
+    attachDeleteHandlers();
+    
+    // ===== HÀM HIỂN THỊ ALERT =====
+    function showAlert(type, message) {
+        // Xóa các alert cũ
+        document.querySelectorAll('.alert').forEach(alert => alert.remove());
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-' + type + ' d-flex align-items-center alert-dismissible fade show';
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = 
+            '<i class="fas fa-' + (type === 'success' ? 'check' : 'exclamation') + '-circle me-2"></i> ' +
+            message +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        
+        const container = document.querySelector('.row.g-4');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Tự động ẩn sau 5 giây
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }, 5000);
+    }
+    
+    // ===== HÀM HIỂN THỊ LOADING =====
+    function showLoading(show) {
+        let loader = document.querySelector('.ajax-loader');
+        
+        if (show) {
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.className = 'ajax-loader';
+                loader.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading...</span></div>';
+                document.body.appendChild(loader);
+            }
+            loader.style.display = 'flex';
+        } else {
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        }
+    }
+});
+</script>
+
+<style>
+/* Loading overlay */
+.ajax-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Alert animation */
+.alert {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
 </body>
 </html>

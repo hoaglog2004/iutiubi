@@ -33,7 +33,7 @@ public class CategoryManagementServlet extends HttpServlet {
             } else if (action.equals("update")) {
                 doUpdate(request, response);
             } else if (action.equals("delete")) {
-                dodelete(request, response);
+                handleDelete(request, response);
             }
         } else { // Xử lý GET
             if (action != null && action.equals("edit")) {
@@ -73,19 +73,29 @@ public class CategoryManagementServlet extends HttpServlet {
         try {
             Category category = new Category();
             BeanUtils.populate(category, request.getParameterMap());
+            
+            // Kiểm tra ID đã tồn tại
+            Category existing = categoryDAO.findById(category.getId());
+            if (existing != null) {
+                request.setAttribute("error", "Lỗi: Thể loại với ID '" + category.getId() + "' đã tồn tại! Vui lòng chọn ID khác.");
+                request.setAttribute("category", category);
+                return;
+            }
+            
             categoryDAO.create(category);
+            categoryDAO.invalidateCache();
             request.setAttribute("message", "Đã tạo thể loại thành công!");
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Lỗi tạo thể loại: " + e.getMessage());
         }
     }
-    @SuppressWarnings("unused")
-	private void dodelete(HttpServletRequest request, HttpServletResponse response) {
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response) {
         try {
             String id = request.getParameter("id");
             categoryDAO.delete(id);
-            request.setAttribute("message", "Đã xóa thể loại!");
+            categoryDAO.invalidateCache();
+            request.setAttribute("message", "Đã xóa thể loại thành công!");
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Lỗi xóa thể loại: " + e.getMessage());
@@ -96,6 +106,7 @@ public class CategoryManagementServlet extends HttpServlet {
             Category category = new Category();
             BeanUtils.populate(category, request.getParameterMap());
             categoryDAO.update(category);
+            categoryDAO.invalidateCache();
             request.setAttribute("message", "Đã cập nhật thể loại thành công!");
         } catch (Exception e) {
             e.printStackTrace();
