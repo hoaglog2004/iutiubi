@@ -63,6 +63,25 @@ prefix="c"%>
           <button type="submit" class="btn-primary">Đăng Nhập</button>
         </form>
 
+        <!-- Social Login Section -->
+        <div class="social-login-divider" style="display: flex; align-items: center; margin: 20px 0;">
+          <span style="flex: 1; border-bottom: 1px solid #ddd;"></span>
+          <span style="padding: 0 15px; color: #888; font-size: 14px;">hoặc đăng nhập với</span>
+          <span style="flex: 1; border-bottom: 1px solid #ddd;"></span>
+        </div>
+        
+        <div class="social-login-buttons" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+          <a href="<c:url value='/oauth2/google'/>" class="btn" style="display: flex; align-items: center; justify-content: center; padding: 12px 20px; border-radius: 8px; background-color: #fff; color: #757575; border: 1px solid #ddd; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">
+            <i class="fab fa-google" style="margin-right: 10px; font-size: 18px;"></i> Google
+          </a>
+          <a href="<c:url value='/oauth2/facebook'/>" class="btn" style="display: flex; align-items: center; justify-content: center; padding: 12px 20px; border-radius: 8px; background-color: #1877f2; color: white; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">
+            <i class="fab fa-facebook-f" style="margin-right: 10px; font-size: 18px;"></i> Facebook
+          </a>
+          <a href="<c:url value='/oauth2/github'/>" class="btn" style="display: flex; align-items: center; justify-content: center; padding: 12px 20px; border-radius: 8px; background-color: #24292e; color: white; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">
+            <i class="fab fa-github" style="margin-right: 10px; font-size: 18px;"></i> GitHub
+          </a>
+        </div>
+
         <div class="toggle-section">
           Chưa có tài khoản? <a onclick="switchForm('register')">Đăng ký</a>
           <br />
