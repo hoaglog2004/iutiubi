@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * OAuth Configuration helper.
  * Reads OAuth client IDs, secrets, and redirect URIs from oauth.properties.
@@ -11,6 +14,7 @@ import java.util.Properties;
  */
 public class OAuthConfig {
     
+    private static final Logger logger = LoggerFactory.getLogger(OAuthConfig.class);
     private static final Properties props = new Properties();
     
     static {
@@ -18,9 +22,11 @@ public class OAuthConfig {
                 .getResourceAsStream("oauth.properties")) {
             if (is != null) {
                 props.load(is);
+            } else {
+                logger.warn("oauth.properties not found in classpath");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to load oauth.properties", e);
         }
     }
     

@@ -45,9 +45,7 @@ public class SocialUser implements Serializable {
     
     public void setProvider(String provider) {
         this.provider = provider;
-        if (this.providerId != null) {
-            this.id = provider + "_" + this.providerId;
-        }
+        regenerateId();
     }
     
     public String getProviderId() {
@@ -56,8 +54,15 @@ public class SocialUser implements Serializable {
     
     public void setProviderId(String providerId) {
         this.providerId = providerId;
-        if (this.provider != null) {
-            this.id = this.provider + "_" + providerId;
+        regenerateId();
+    }
+    
+    /**
+     * Regenerates the unique ID from provider and providerId.
+     */
+    private void regenerateId() {
+        if (this.provider != null && this.providerId != null) {
+            this.id = this.provider + "_" + this.providerId;
         }
     }
     

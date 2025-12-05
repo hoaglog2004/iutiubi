@@ -153,8 +153,13 @@ public class OAuthHttpClient {
     
     /**
      * URL encode a string.
+     * @param s the string to encode
+     * @return the URL-encoded string, or empty string if input is null
      */
     public static String urlEncode(String s) {
+        if (s == null) {
+            return "";
+        }
         return java.net.URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 }
