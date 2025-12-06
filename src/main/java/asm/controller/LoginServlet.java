@@ -124,7 +124,7 @@ public class LoginServlet extends HttpServlet {
             
             logger.info("Failed login attempt for user: {} from IP: {}", username, clientIp);
             
-            String errorMessage = "Username/Email hoặc password không đúng!";
+            String errorMessage = "Tên đăng nhập/Email hoặc mật khẩu không đúng!";
             if (lockedOut) {
                 errorMessage = "Tài khoản đã bị tạm khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.";
             } else if (remaining <= 3) {
