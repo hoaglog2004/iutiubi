@@ -76,52 +76,64 @@ public class LoginServlet extends HttpServlet {
         
         try {
             UserDAO dao = new UserDAO();
-            User user = dao.checkLogin(username, password); // Dùng hàm checkLogin với BCrypt
+            // Try to login with username or email
+            User user = dao.findByEmailOrUsername(username);
             
-            if (user == null) {
-                // Đăng nhập thất bại - record failed attempt
-                boolean lockedOut = RateLimiterUtil.recordFailedAttempt(clientIp);
-                int remaining = RateLimiterUtil.getRemainingAttempts(clientIp);
-                
-                logger.info("Failed login attempt for user: {} from IP: {}", username, clientIp);
-                
-                String errorMessage = "Username hoặc password không đúng!";
-                if (lockedOut) {
-                    errorMessage = "Tài khoản đã bị tạm khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.";
-                } else if (remaining <= 3) {
-                    errorMessage += " Còn " + remaining + " lần thử.";
+            if (user != null) {
+                // Verify password using BCrypt
+                if (asm.utils.PasswordUtils.checkPassword(password, user.getPassword())) {
+                    // Login successful - clear failed attempts
+                    RateLimiterUtil.clearFailedAttempts(clientIp);
+                    logger.info("Successful login for user: {} from IP: {}", username, clientIp);
+                    
+                    // Check if password needs to be rehashed (migration from plain text)
+                    if (asm.utils.PasswordUtils.needsRehash(user.getPassword())) {
+                        logger.info("Upgrading password hash for user: {}", user.getId());
+                        user.setPassword(asm.utils.PasswordUtils.hashPassword(password));
+                        dao.update(user);
+                    }
+                    
+                    HttpSession session = request.getSession();
+                    session.setAttribute("currentUser", user); // Lưu user vào session
+                    
+                    // Xử lý "Remember Me"
+                    if (rememberMe) {
+                        Cookie cookie = new Cookie("username", user.getId());
+                        cookie.setMaxAge(60 * 60 * 24 * 30); // 30 ngày
+                        cookie.setHttpOnly(true); // Security: prevent XSS access
+                        cookie.setSecure(true); // Security: only send over HTTPS
+                        response.addCookie(cookie);
+                    } else {
+                        // Nếu bỏ check, xóa cookie
+                        Cookie cookie = new Cookie("username", "");
+                        cookie.setMaxAge(0); // Xóa
+                        cookie.setHttpOnly(true);
+                        cookie.setSecure(true);
+                        response.addCookie(cookie);
+                    }
+                    
+                    // Chuyển hướng về trang chủ
+                    response.sendRedirect("home");
+                    return;
                 }
-                
-                request.setAttribute("error", errorMessage);
-                request.setAttribute("view", "login"); // [JSP] Quay lại tab login
-                request.getRequestDispatcher("/views/auth.jsp").forward(request, response);
-            } else {
-                // Đăng nhập thành công - clear failed attempts
-                RateLimiterUtil.clearFailedAttempts(clientIp);
-                logger.info("Successful login for user: {} from IP: {}", username, clientIp);
-                
-                HttpSession session = request.getSession();
-                session.setAttribute("currentUser", user); // Lưu user vào session
-                
-                // Xử lý "Remember Me"
-                if (rememberMe) {
-                    Cookie cookie = new Cookie("username", user.getId());
-                    cookie.setMaxAge(60 * 60 * 24 * 30); // 30 ngày
-                    cookie.setHttpOnly(true); // Security: prevent XSS access
-                    cookie.setSecure(true); // Security: only send over HTTPS
-                    response.addCookie(cookie);
-                } else {
-                    // Nếu bỏ check, xóa cookie
-                    Cookie cookie = new Cookie("username", "");
-                    cookie.setMaxAge(0); // Xóa
-                    cookie.setHttpOnly(true);
-                    cookie.setSecure(true);
-                    response.addCookie(cookie);
-                }
-                
-                // Chuyển hướng về trang chủ
-                response.sendRedirect("home");
             }
+            
+            // Đăng nhập thất bại - record failed attempt
+            boolean lockedOut = RateLimiterUtil.recordFailedAttempt(clientIp);
+            int remaining = RateLimiterUtil.getRemainingAttempts(clientIp);
+            
+            logger.info("Failed login attempt for user: {} from IP: {}", username, clientIp);
+            
+            String errorMessage = "Username/Email hoặc password không đúng!";
+            if (lockedOut) {
+                errorMessage = "Tài khoản đã bị tạm khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.";
+            } else if (remaining <= 3) {
+                errorMessage += " Còn " + remaining + " lần thử.";
+            }
+            
+            request.setAttribute("error", errorMessage);
+            request.setAttribute("view", "login"); // [JSP] Quay lại tab login
+            request.getRequestDispatcher("/views/auth.jsp").forward(request, response);
             
         } catch (Exception e) {
             logger.error("Error during login for user: {}", username, e);

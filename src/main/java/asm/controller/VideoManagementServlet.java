@@ -75,11 +75,17 @@ public class VideoManagementServlet extends HttpServlet {
                 Category category = categoryDAO.findById(categoryId); 
                 video.setCategory(category); // Set đối tượng vào video
             }
-            // 2. [THÊM MỚI] Tự động tạo Poster URL
+            // 2. [THÊM MỚI] Tự động tạo Poster URL nếu chưa có
             String videoId = video.getId();
-            if (videoId != null && !videoId.isEmpty() && video.getPoster() == null) { // Chỉ set nếu poster đang rỗng
+            String posterInput = request.getParameter("poster");
+            
+            // Nếu user không nhập poster URL, tự động tạo từ YouTube
+            if ((posterInput == null || posterInput.trim().isEmpty()) && videoId != null && !videoId.isEmpty()) {
                 String posterUrl = "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg";
                 video.setPoster(posterUrl);
+            } else if (posterInput != null && !posterInput.trim().isEmpty()) {
+                // Nếu user nhập poster URL, sử dụng URL đó
+                video.setPoster(posterInput.trim());
             }
             
             // 3. Xử lý action

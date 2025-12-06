@@ -129,9 +129,9 @@
             <!-- Traditional Login Form -->
             <form id="loginForm" action="<c:url value='/login'/>" method="post">
                 <div class="form-group">
-                    <label for="loginUsername">Tên đăng nhập (ID)</label>
+                    <label for="loginUsername">Tên đăng nhập hoặc Email</label>
                     <input type="text" class="form-control" id="loginUsername" 
-                           name="username" placeholder="Nhập tên đăng nhập" required
+                           name="username" placeholder="Nhập tên đăng nhập hoặc email" required
                            value="${param.username}">
                 </div>
 

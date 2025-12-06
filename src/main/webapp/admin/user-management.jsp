@@ -267,6 +267,21 @@
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label">Avatar URL</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-image"></i></span>
+                                    <input type="text" class="form-control custom-input" name="avatar" value="${user.avatar}"
+                                        placeholder="URL hình ảnh avatar (tùy chọn)">
+                                </div>
+                                <c:if test="${not empty user.avatar}">
+                                    <div class="mt-2">
+                                        <img src="${user.avatar}" alt="Current avatar" 
+                                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 1px solid #333;">
+                                    </div>
+                                </c:if>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Mật khẩu</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-lock"></i></span>
@@ -324,6 +339,7 @@
                         <table class="custom-table">
                             <thead>
                                 <tr>
+                                    <th width="8%">Avatar</th>
                                     <th width="15%">Username</th>
                                     <th>Họ và Tên</th>
                                     <th>Email</th>
@@ -334,6 +350,19 @@
                             <tbody>
                                 <c:forEach var="u" items="${userList}">
                                     <tr>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty u.avatar}">
+                                                    <img src="${u.avatar}" alt="Avatar" 
+                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div style="width: 40px; height: 40px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-user text-muted"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
                                         <td class="text-secondary font-monospace">${u.id}</td>
                                         <td>${u.fullname}</td>
                                         <td>${u.email}</td>
@@ -354,7 +383,7 @@
                                 <!-- Empty State handling -->
                                 <c:if test="${empty userList}">
                                     <tr>
-                                        <td colspan="5" class="text-center py-5 text-muted">
+                                        <td colspan="6" class="text-center py-5 text-muted">
                                             <i class="fas fa-users fa-3x mb-3"></i><br>
                                             Chưa có user nào trong hệ thống.
                                         </td>

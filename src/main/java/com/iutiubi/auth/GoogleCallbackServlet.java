@@ -14,6 +14,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import asm.dao.UserDAO;
+import asm.model.User;
+
 /**
  * Callback servlet for Google OAuth2.
  * Handles the authorization code exchange and user info retrieval.
@@ -74,7 +77,20 @@ public class GoogleCallbackServlet extends HttpServlet {
                 throw new IOException("Failed to obtain user info from Google");
             }
             
-            // Save user if not exists
+            // Check if email already exists in Users table
+            UserDAO userDAO = new UserDAO();
+            User existingUser = userDAO.findByEmail(user.getEmail());
+            
+            if (existingUser != null) {
+                // Email already registered - show error message
+                logger.warn("Google login attempt with already registered email: {}", user.getEmail());
+                request.setAttribute("error", "Email đã được đăng ký");
+                request.setAttribute("view", "login");
+                request.getRequestDispatcher("/views/auth.jsp").forward(request, response);
+                return;
+            }
+            
+            // Save user if not exists in social users
             if (!userDao.exists(user.getId())) {
                 userDao.save(user);
                 logger.info("New Google user registered: {}", user.getEmail());
