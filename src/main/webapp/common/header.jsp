@@ -5,8 +5,10 @@
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
 	rel="stylesheet" />
 <link href="<c:url value='/assets/css/style.css'/>" rel="stylesheet" />
-<link href="<c:url value='/assets/css/animations.css'/>" rel="stylesheet" />
-<link href="<c:url value='/assets/css/components.css'/>" rel="stylesheet" />
+<link href="<c:url value='/assets/css/animations.css'/>"
+	rel="stylesheet" />
+<link href="<c:url value='/assets/css/components.css'/>"
+	rel="stylesheet" />
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -24,8 +26,7 @@
 
 		<div class="search-container">
 			<div style="display: flex">
-				<input type="text" id="searchInput"
-					placeholder="Tìm kiếm video..."
+				<input type="text" id="searchInput" placeholder="Tìm kiếm video..."
 					value="${param.keyword}" />
 
 				<button class="search-btn" id="searchButton" type="button">
@@ -40,7 +41,7 @@
 			</button>
 
 			<div id="userSection" class="user-section dropdown">
-				
+
 				<%-- ====================================== --%>
 				<%-- 1. TRẠNG THÁI CHƯA ĐĂNG NHẬP --%>
 				<%-- ====================================== --%>
@@ -57,9 +58,8 @@
 					<c:choose>
 						<c:when test="${not empty sessionScope.currentUser.avatar}">
 							<img
-								src="<c:url value='/uploads/avatars/${sessionScope.currentUser.avatar}'/>"
-								class="user-avatar"
-								data-bs-toggle="dropdown"
+								src="<c:url value='/assets/img/${sessionScope.currentUser.avatar}'/>"
+								class="user-avatar" data-bs-toggle="dropdown"
 								aria-expanded="false"
 								style="cursor: pointer; object-fit: cover; border: 2px solid #fff;"
 								title="${sessionScope.currentUser.fullname}">
@@ -68,11 +68,10 @@
 							<div class="user-avatar" data-bs-toggle="dropdown"
 								aria-expanded="false" style="cursor: pointer;"
 								title="${sessionScope.currentUser.fullname}">
-								${sessionScope.currentUser.id.substring(0, 1).toUpperCase()}
-							</div>
+								${sessionScope.currentUser.id.substring(0, 1).toUpperCase()}</div>
 						</c:otherwise>
 					</c:choose>
-					
+
 					<%-- MENU DROPDOWN --%>
 					<ul class="dropdown-menu dropdown-menu-end">
 						<li><a class="dropdown-item"
