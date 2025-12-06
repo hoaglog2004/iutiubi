@@ -285,6 +285,19 @@
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label">Thumbnail URL</label>
+                                <input type="text" class="form-control custom-input" name="poster" 
+                                       value="${video.poster}" placeholder="URL hình ảnh thumbnail (tự động tạo nếu để trống)">
+                                <small class="text-muted">Để trống để tự động sử dụng thumbnail từ YouTube</small>
+                                <c:if test="${not empty video.poster}">
+                                    <div class="mt-2">
+                                        <img src="${video.poster}" alt="Current thumbnail" 
+                                             style="max-width: 200px; border-radius: 4px; border: 1px solid #333;">
+                                    </div>
+                                </c:if>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label d-block">Trạng thái</label>
                                 <div class="btn-group w-100" role="group">
                                     <input type="radio" class="btn-check" name="active" id="active" value="true" ${video.active ? 'checked' : ''} autocomplete="off">
@@ -333,7 +346,8 @@
                         <table class="custom-table">
                             <thead>
                                 <tr>
-                                    <th width="15%">Youtube ID</th>
+                                    <th width="10%">Thumbnail</th>
+                                    <th width="12%">Youtube ID</th>
                                     <th>Tiêu đề</th>
                                     <th width="10%">Views</th>
                                     <th width="12%">Trạng thái</th>
@@ -343,6 +357,19 @@
                             <tbody>
                                 <c:forEach var="v" items="${videoList}">
                                     <tr>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty v.poster}">
+                                                    <img src="${v.poster}" alt="Thumbnail" 
+                                                         style="width: 80px; height: 60px; object-fit: cover; border-radius: 4px;">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div style="width: 80px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-video text-muted"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
                                         <td class="text-secondary font-monospace">${v.id}</td>
                                         <td class="video-title-cell" title="${v.title}">${v.title}</td>
                                         <td>${v.views}</td>
@@ -363,7 +390,7 @@
                                 <!-- Empty State handling (Optional) -->
                                 <c:if test="${empty videoList}">
                                     <tr>
-                                        <td colspan="5" class="text-center py-5 text-muted">
+                                        <td colspan="6" class="text-center py-5 text-muted">
                                             <i class="fas fa-film fa-3x mb-3"></i><br>
                                             Chưa có video nào trong hệ thống.
                                         </td>
