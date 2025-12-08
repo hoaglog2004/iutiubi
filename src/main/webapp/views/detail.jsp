@@ -265,7 +265,6 @@
 	<script>
     var player;
     var saveInterval = null;
-    var autoplayTimeout = null;
     var countdownInterval = null;
     const videoId = '${video.id}';
     // Lấy thời gian lịch sử một cách an toàn (tránh lỗi nếu ${history} là null)
@@ -277,7 +276,7 @@
         <c:forEach var="rv" items="${relatedVideos}" varStatus="status">
             {
                 id: '${rv.id}',
-                title: '${rv.title}'
+                title: '<c:out value="${rv.title}" escapeXml="false"/>'.replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r")
             }<c:if test="${!status.last}">,</c:if>
         </c:forEach>
     ];
@@ -364,16 +363,10 @@
                 playNext(nextVideo.id);
             }
         }, 1000);
-        
-        // Tự động chuyển sau 5 giây
-        autoplayTimeout = setTimeout(function() {
-            playNext(nextVideo.id);
-        }, seconds * 1000);
     }
     
     // Chuyển sang video tiếp theo
     function playNext(videoId) {
-        if (autoplayTimeout) clearTimeout(autoplayTimeout);
         if (countdownInterval) clearInterval(countdownInterval);
         
         const nextVideoId = videoId || (relatedVideos.length > 0 ? relatedVideos[0].id : null);
@@ -384,7 +377,6 @@
     
     // Hủy autoplay
     function cancelAutoplay() {
-        if (autoplayTimeout) clearTimeout(autoplayTimeout);
         if (countdownInterval) clearInterval(countdownInterval);
         
         const overlay = document.getElementById('autoplay-overlay');
