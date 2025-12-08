@@ -43,12 +43,20 @@ public class DetailServlet extends HttpServlet {
                 request.setAttribute("history", history); 
             }
             
-            // 3. Lấy danh sách video xem thêm (Lấy 8 video đầu tiên)
-            List<Video> relatedList = videoDAO.findAll(1, 8);
+            // 3. Lấy danh sách video liên quan (cùng thể loại)
+            List<Video> relatedVideos = null;
+            if (video != null && video.getCategory() != null) {
+                relatedVideos = videoDAO.findRelatedVideos(video.getCategory().getId(), videoId, 8);
+            }
+            // Nếu không có video liên quan cùng thể loại, lấy video ngẫu nhiên
+            if (relatedVideos == null || relatedVideos.isEmpty()) {
+                relatedVideos = videoDAO.findAll(1, 8);
+            }
             
             // 4. Đẩy dữ liệu ra JSP
             request.setAttribute("video", video);
-            request.setAttribute("videoList", relatedList); 
+            request.setAttribute("videoList", relatedVideos); 
+            request.setAttribute("relatedVideos", relatedVideos);
             
         } catch (Exception e) {
             e.printStackTrace();

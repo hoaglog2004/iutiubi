@@ -271,4 +271,28 @@ public class VideoDAO extends AbstractDAO<Video> {
 			em.close();
 		}
 	}
+
+	/**
+	 * Tìm các video liên quan cùng thể loại (category)
+	 * 
+	 * @param categoryId     ID của category cần tìm video
+	 * @param excludeVideoId ID của video hiện tại cần loại trừ
+	 * @param limit          Số lượng video tối đa cần lấy
+	 * @return List<Video>
+	 */
+	public List<Video> findRelatedVideos(String categoryId, String excludeVideoId, int limit) {
+		EntityManager em = JpaUtils.getEntityManager();
+		try {
+			String jpql = "SELECT v FROM Video v LEFT JOIN FETCH v.category " +
+			              "WHERE v.category.id = :cid AND v.id != :excludeId AND v.active = true " +
+			              "ORDER BY v.views DESC";
+			TypedQuery<Video> query = em.createQuery(jpql, Video.class);
+			query.setParameter("cid", categoryId);
+			query.setParameter("excludeId", excludeVideoId);
+			query.setMaxResults(limit);
+			return query.getResultList();
+		} finally {
+			em.close();
+		}
+	}
 }

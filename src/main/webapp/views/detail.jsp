@@ -53,6 +53,44 @@
 	border: 0;
 }
 
+#autoplay-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.85);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 100;
+	border-radius: 12px;
+}
+
+.autoplay-notification {
+	text-align: center;
+	color: #fff;
+	padding: 30px;
+}
+
+.autoplay-notification #countdown {
+	font-size: 24px;
+	font-weight: bold;
+	color: #ff0000;
+}
+
+.autoplay-notification .next-title {
+	font-size: 18px;
+	margin: 15px 0;
+	color: #aaa;
+}
+
+.autoplay-notification button {
+	margin: 5px;
+	padding: 10px 20px;
+	border-radius: 20px;
+}
+
 .video-main-title {
 	font-size: 24px;
 	font-weight: 600;
@@ -171,6 +209,15 @@
 			<div class="detail-left">
 				<div class="video-player">
 					<div id="player"></div>
+					<div id="autoplay-overlay">
+						<div class="autoplay-notification">
+							<div>Video tiếp theo sẽ phát sau</div>
+							<div id="countdown">5</div>
+							<div class="next-title" id="next-video-title"></div>
+							<button class="btn btn-primary" onclick="playNext()">Xem ngay</button>
+							<button class="btn btn-secondary" onclick="cancelAutoplay()">Hủy</button>
+						</div>
+					</div>
 				</div>
 
 				<h1 class="video-main-title">${video.title}</h1>
@@ -218,10 +265,21 @@
 	<script>
     var player;
     var saveInterval = null;
+    var countdownInterval = null;
     const videoId = '${video.id}';
     // Lấy thời gian lịch sử một cách an toàn (tránh lỗi nếu ${history} là null)
     const historyTime = ${history.lastTime != null ? history.lastTime : 0}; 
     const isUserLoggedIn = '${sessionScope.currentUser.id}' !== '';
+    
+    // Mảng chứa danh sách video liên quan
+    const relatedVideos = [
+        <c:forEach var="rv" items="${relatedVideos}" varStatus="status">
+            {
+                id: '${rv.id}',
+                title: '<c:out value="${rv.title}" escapeXml="false"/>'.replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r")
+            }<c:if test="${!status.last}">,</c:if>
+        </c:forEach>
+    ];
 
     // 1. HÀM KHỞI ĐỘNG PLAYER
     window.onYouTubeIframeAPIReady = function() {
@@ -250,19 +308,79 @@
     }
     
     function onPlayerStateChange(event) {
-        if (!isUserLoggedIn) return; // Không làm gì nếu chưa đăng nhập
+        if (!isUserLoggedIn) {
+            // Vẫn xử lý autoplay cho người dùng chưa đăng nhập
+            if (event.data == YT.PlayerState.ENDED) {
+                handleVideoEnded();
+            }
+            return;
+        }
 
         // Nếu video dừng lại hoặc kết thúc
         if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
             if (saveInterval) clearInterval(saveInterval); 
             saveInterval = null;
             savePosition(); // Lưu lần cuối khi dừng
+            
+            // Xử lý autoplay khi video kết thúc
+            if (event.data == YT.PlayerState.ENDED) {
+                handleVideoEnded();
+            }
         } 
         
         // Nếu video đang phát và chưa có timer
         else if (event.data == YT.PlayerState.PLAYING && !saveInterval) {
             saveInterval = setInterval(savePosition, 5000);
         }
+    }
+    
+    // Xử lý khi video kết thúc
+    function handleVideoEnded() {
+        if (relatedVideos && relatedVideos.length > 0) {
+            const nextVideo = relatedVideos[0];
+            showAutoplayNotification(nextVideo, 5);
+        }
+    }
+    
+    // Hiển thị thông báo autoplay với đếm ngược
+    function showAutoplayNotification(nextVideo, seconds) {
+        const overlay = document.getElementById('autoplay-overlay');
+        const countdownElement = document.getElementById('countdown');
+        const nextTitleElement = document.getElementById('next-video-title');
+        
+        overlay.style.display = 'flex';
+        nextTitleElement.textContent = nextVideo.title;
+        
+        let timeLeft = seconds;
+        countdownElement.textContent = timeLeft;
+        
+        countdownInterval = setInterval(function() {
+            timeLeft--;
+            countdownElement.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                playNext(nextVideo.id);
+            }
+        }, 1000);
+    }
+    
+    // Chuyển sang video tiếp theo
+    function playNext(videoId) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        
+        const nextVideoId = videoId || (relatedVideos.length > 0 ? relatedVideos[0].id : null);
+        if (nextVideoId) {
+            window.location.href = '<c:url value="/detail"/>?videoId=' + nextVideoId;
+        }
+    }
+    
+    // Hủy autoplay
+    function cancelAutoplay() {
+        if (countdownInterval) clearInterval(countdownInterval);
+        
+        const overlay = document.getElementById('autoplay-overlay');
+        overlay.style.display = 'none';
     }
 
     // 2. HÀM LƯU TRẠNG THÁI (Đã sửa lỗi an toàn)
