@@ -24,7 +24,15 @@
             --text-secondary: #a0a0a0;
             --accent-color: #ff4757; /* Màu đỏ hiện đại hơn */
             --accent-hover: #ff6b81;
+            --accent-primary: #667eea; /* Màu primary gradient */
             --border-color: #333;
+            
+            /* Layout dimensions */
+            --navbar-height: 70px;
+            --sidebar-width: 240px;
+            --sidebar-collapsed-width: 80px;
+            --sidebar-mobile-width: 60px;
+            --page-header-height: 60px;
         }
 
         body {
@@ -35,10 +43,11 @@
 
         .main-content {
             padding: 2rem;
-            padding-top: 80px; /* Space for fixed header */
+            /* Space for fixed header: navbar + page header + some margin */
+            padding-top: calc(var(--page-header-height) + 20px);
         }
 
-        /* Header Styling - Fixed position */
+        /* Header Styling - Fixed position synchronized with sidebar */
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -48,10 +57,11 @@
             border-bottom: 1px solid var(--border-color);
             background-color: var(--bg-dark);
             position: fixed;
-            top: 70px; /* Below the main navbar */
-            left: 240px; /* After the sidebar */
+            top: var(--navbar-height); /* Below the main navbar */
+            left: var(--sidebar-width); /* After the sidebar */
             right: 0;
             z-index: 90;
+            height: var(--page-header-height);
         }
 
         .page-title {
@@ -265,11 +275,11 @@
           .video-manager-container { flex-direction: column; }
           .vm-left, .vm-right { max-width: 100%; flex: 1 1 100%; }
           .vm-panel-inner { max-height: none; overflow: visible; }
-          .page-header { left: 80px; } /* Adjust for collapsed sidebar */
+          .page-header { left: var(--sidebar-collapsed-width); } /* Adjust for collapsed sidebar */
         }
         
         @media (max-width: 768px) {
-          .page-header { left: 60px; } /* Adjust for mobile sidebar */
+          .page-header { left: var(--sidebar-mobile-width); } /* Adjust for mobile sidebar */
         }
     </style>
 </head>
@@ -362,7 +372,7 @@
                                     <c:when test="${not empty video.poster}">
                                         <div class="mt-2 position-relative" style="max-width: 200px;">
                                             <img src="${video.poster}" alt="Current thumbnail" id="thumbnailPreview"
-                                                 style="width: 100%; border-radius: 8px; border: 2px solid #667eea; cursor: pointer;"
+                                                 style="width: 100%; border-radius: 8px; border: 2px solid var(--accent-primary); cursor: pointer;"
                                                  onclick="document.getElementById('posterInput').focus()"
                                                  title="Click vào URL phía trên để thay đổi thumbnail">
                                             <small class="text-info d-block mt-1"><i class="fas fa-info-circle"></i> Nhập URL mới bên trên để thay đổi</small>
@@ -496,24 +506,61 @@
     <script src="<c:url value='/assets/js/video-management.js'/>"></script>
     
     <script>
-        // Real-time thumbnail preview update
+        // Real-time thumbnail preview update with URL validation
         document.addEventListener('DOMContentLoaded', function() {
             const posterInput = document.getElementById('posterInput');
             const thumbnailPreview = document.getElementById('thumbnailPreview');
             
+            // Whitelist of allowed domains for thumbnail URLs
+            const ALLOWED_DOMAINS = [
+                'img.youtube.com',
+                'i.ytimg.com',
+                'imgur.com',
+                'i.imgur.com',
+                'cloudinary.com'
+            ];
+            
+            // Validate URL format and domain
+            function isValidThumbnailUrl(urlString) {
+                try {
+                    const url = new URL(urlString);
+                    // Only allow http and https protocols
+                    if (!['http:', 'https:'].includes(url.protocol)) {
+                        return false;
+                    }
+                    // Check if domain is in whitelist
+                    return ALLOWED_DOMAINS.some(domain => url.hostname.endsWith(domain));
+                } catch (e) {
+                    return false;
+                }
+            }
+            
             if (posterInput && thumbnailPreview) {
+                // Get CSS custom property values
+                const computedStyle = getComputedStyle(document.documentElement);
+                const accentPrimary = computedStyle.getPropertyValue('--accent-primary').trim() || '#667eea';
+                const accentColor = computedStyle.getPropertyValue('--accent-color').trim() || '#ff4757';
+                
                 posterInput.addEventListener('input', function() {
                     const url = this.value.trim();
-                    if (url) {
+                    if (url && isValidThumbnailUrl(url)) {
                         thumbnailPreview.src = url;
-                        thumbnailPreview.style.borderColor = '#667eea';
+                        thumbnailPreview.style.borderColor = accentPrimary;
+                    } else if (url) {
+                        // Invalid URL - show warning
+                        thumbnailPreview.style.borderColor = accentColor;
                     }
                 });
                 
                 // Handle image load errors
                 thumbnailPreview.addEventListener('error', function() {
-                    this.style.borderColor = '#ff4757';
+                    this.style.borderColor = accentColor;
                     this.alt = 'Failed to load thumbnail';
+                });
+                
+                // Handle successful load
+                thumbnailPreview.addEventListener('load', function() {
+                    this.style.borderColor = accentPrimary;
                 });
             }
         });
