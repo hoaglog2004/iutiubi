@@ -371,7 +371,7 @@
                                 <c:choose>
                                     <c:when test="${not empty video.poster}">
                                         <div class="mt-2 position-relative" style="max-width: 200px;">
-                                            <img src="${video.poster}" alt="Current thumbnail" id="thumbnailPreview"
+                                            <img src="${video.poster}" alt="Current thumbnail" class="thumbnail-preview"
                                                  style="width: 100%; border-radius: 8px; border: 2px solid var(--accent-primary); cursor: pointer;"
                                                  onclick="document.getElementById('posterInput').focus()"
                                                  title="Click vào URL phía trên để thay đổi thumbnail">
@@ -380,7 +380,7 @@
                                     </c:when>
                                     <c:when test="${not empty video.id}">
                                         <div class="mt-2 position-relative" style="max-width: 200px;">
-                                            <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="Auto-generated thumbnail" id="thumbnailPreview"
+                                            <img src="https://img.youtube.com/vi/<c:out value='${video.id}'/>/hqdefault.jpg" alt="Auto-generated thumbnail" class="thumbnail-preview"
                                                  style="width: 100%; border-radius: 8px; border: 2px solid #555; cursor: pointer;"
                                                  onclick="document.getElementById('posterInput').focus()"
                                                  title="Thumbnail tự động từ YouTube. Nhập URL để thay đổi">
@@ -509,15 +509,15 @@
         // Real-time thumbnail preview update with URL validation
         document.addEventListener('DOMContentLoaded', function() {
             const posterInput = document.getElementById('posterInput');
-            const thumbnailPreview = document.getElementById('thumbnailPreview');
+            const thumbnailPreview = document.querySelector('.thumbnail-preview');
             
-            // Whitelist of allowed domains for thumbnail URLs
+            // Whitelist of allowed domains for thumbnail URLs (exact matching)
             const ALLOWED_DOMAINS = [
                 'img.youtube.com',
                 'i.ytimg.com',
                 'imgur.com',
                 'i.imgur.com',
-                'cloudinary.com'
+                'res.cloudinary.com'
             ];
             
             // Validate URL format and domain
@@ -528,13 +528,14 @@
                     if (!['http:', 'https:'].includes(url.protocol)) {
                         return false;
                     }
-                    // Check if domain is in whitelist
-                    return ALLOWED_DOMAINS.some(domain => url.hostname.endsWith(domain));
+                    // Exact domain matching to prevent subdomain bypass
+                    return ALLOWED_DOMAINS.includes(url.hostname);
                 } catch (e) {
                     return false;
                 }
             }
             
+            // Only run if both elements exist
             if (posterInput && thumbnailPreview) {
                 // Get CSS custom property values
                 const computedStyle = getComputedStyle(document.documentElement);
@@ -547,7 +548,7 @@
                         thumbnailPreview.src = url;
                         thumbnailPreview.style.borderColor = accentPrimary;
                     } else if (url) {
-                        // Invalid URL - show warning
+                        // Invalid URL - show warning border but don't load
                         thumbnailPreview.style.borderColor = accentColor;
                     }
                 });
@@ -563,6 +564,8 @@
                     this.style.borderColor = accentPrimary;
                 });
             }
+        });
+    </script>
         });
     </script>
 </body>
