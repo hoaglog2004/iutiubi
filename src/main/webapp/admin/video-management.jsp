@@ -35,16 +35,23 @@
 
         .main-content {
             padding: 2rem;
+            padding-top: 80px; /* Space for fixed header */
         }
 
-        /* Header Styling */
+        /* Header Styling - Fixed position */
         .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            padding: 1rem 2rem;
             border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-dark);
+            position: fixed;
+            top: 70px; /* Below the main navbar */
+            left: 240px; /* After the sidebar */
+            right: 0;
+            z-index: 90;
         }
 
         .page-title {
@@ -170,13 +177,14 @@
         .custom-table th {
             color: var(--text-secondary);
             font-weight: 600;
-            padding: 1rem;
+            padding: 1rem 1.5rem; /* Increased horizontal padding */
             border-bottom: 1px solid var(--border-color);
+            white-space: nowrap; /* Prevent text wrapping in headers */
         }
 
         .custom-table td {
             background-color: #252525;
-            padding: 1rem;
+            padding: 1rem 1.5rem; /* Increased horizontal padding */
             vertical-align: middle;
             color: #fff;
             border-top: 1px solid transparent;
@@ -197,6 +205,8 @@
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
+            white-space: nowrap; /* Prevent text wrapping */
+            display: inline-block; /* Ensure proper alignment */
         }
         .status-active { background-color: rgba(46, 213, 115, 0.15); color: #2ed573; }
         .status-inactive { background-color: rgba(255, 71, 87, 0.15); color: #ff4757; }
@@ -255,6 +265,11 @@
           .video-manager-container { flex-direction: column; }
           .vm-left, .vm-right { max-width: 100%; flex: 1 1 100%; }
           .vm-panel-inner { max-height: none; overflow: visible; }
+          .page-header { left: 80px; } /* Adjust for collapsed sidebar */
+        }
+        
+        @media (max-width: 768px) {
+          .page-header { left: 60px; } /* Adjust for mobile sidebar */
         }
     </style>
 </head>
@@ -338,15 +353,31 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail URL</label>
-                                <input type="text" class="form-control custom-input" name="poster" 
+                                <input type="text" class="form-control custom-input" name="poster" id="posterInput"
                                        value="${video.poster}" placeholder="URL hình ảnh thumbnail (tự động tạo nếu để trống)">
-                                <small class="text-muted">Để trống để tự động sử dụng thumbnail từ YouTube</small>
-                                <c:if test="${not empty video.poster}">
-                                    <div class="mt-2">
-                                        <img src="${video.poster}" alt="Current thumbnail" 
-                                             style="max-width: 200px; border-radius: 4px; border: 1px solid #333;">
-                                    </div>
-                                </c:if>
+                                <small class="text-muted d-block mb-2">Để trống để tự động sử dụng thumbnail từ YouTube</small>
+                                
+                                <!-- Thumbnail Preview -->
+                                <c:choose>
+                                    <c:when test="${not empty video.poster}">
+                                        <div class="mt-2 position-relative" style="max-width: 200px;">
+                                            <img src="${video.poster}" alt="Current thumbnail" id="thumbnailPreview"
+                                                 style="width: 100%; border-radius: 8px; border: 2px solid #667eea; cursor: pointer;"
+                                                 onclick="document.getElementById('posterInput').focus()"
+                                                 title="Click vào URL phía trên để thay đổi thumbnail">
+                                            <small class="text-info d-block mt-1"><i class="fas fa-info-circle"></i> Nhập URL mới bên trên để thay đổi</small>
+                                        </div>
+                                    </c:when>
+                                    <c:when test="${not empty video.id}">
+                                        <div class="mt-2 position-relative" style="max-width: 200px;">
+                                            <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="Auto-generated thumbnail" id="thumbnailPreview"
+                                                 style="width: 100%; border-radius: 8px; border: 2px solid #555; cursor: pointer;"
+                                                 onclick="document.getElementById('posterInput').focus()"
+                                                 title="Thumbnail tự động từ YouTube. Nhập URL để thay đổi">
+                                            <small class="text-muted d-block mt-1"><i class="fas fa-youtube"></i> Thumbnail tự động từ YouTube</small>
+                                        </div>
+                                    </c:when>
+                                </c:choose>
                             </div>
 
                             <div class="mb-3">
@@ -402,9 +433,9 @@
                                     <th width="10%">Thumbnail</th>
                                     <th width="12%">Youtube ID</th>
                                     <th>Tiêu đề</th>
-                                    <th width="10%">Views</th>
-                                    <th width="12%">Trạng thái</th>
-                                    <th width="10%">Thao tác</th>
+                                    <th width="10%" class="text-center">Views</th>
+                                    <th width="12%" class="text-center">Trạng thái</th>
+                                    <th width="10%" class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -425,13 +456,13 @@
                                         </td>
                                         <td class="text-secondary font-monospace">${v.id}</td>
                                         <td class="video-title-cell" title="${v.title}">${v.title}</td>
-                                        <td>${v.views}</td>
-                                        <td>
+                                        <td class="text-center">${v.views}</td>
+                                        <td class="text-center">
                                             <span class="status-badge ${v.active ? 'status-active' : 'status-inactive'}">
                                                 ${v.active ? 'Hoạt động' : 'Đã ẩn'}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             <a href="<c:url value='/admin/videos?action=edit&id=${v.id}'/>" 
                                                class="btn btn-sm btn-outline-light border-0">
                                                 <i class="fas fa-pen text-info"></i>
@@ -463,5 +494,29 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<c:url value='/assets/js/app.js'/>"></script>
     <script src="<c:url value='/assets/js/video-management.js'/>"></script>
+    
+    <script>
+        // Real-time thumbnail preview update
+        document.addEventListener('DOMContentLoaded', function() {
+            const posterInput = document.getElementById('posterInput');
+            const thumbnailPreview = document.getElementById('thumbnailPreview');
+            
+            if (posterInput && thumbnailPreview) {
+                posterInput.addEventListener('input', function() {
+                    const url = this.value.trim();
+                    if (url) {
+                        thumbnailPreview.src = url;
+                        thumbnailPreview.style.borderColor = '#667eea';
+                    }
+                });
+                
+                // Handle image load errors
+                thumbnailPreview.addEventListener('error', function() {
+                    this.style.borderColor = '#ff4757';
+                    this.alt = 'Failed to load thumbnail';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
